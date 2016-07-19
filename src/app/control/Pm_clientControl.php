@@ -1,22 +1,13 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: pm_client.php 1166 2014-11-03 01:49:32Z hypowang $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\control;
 
-class pm_clientcontrol extends base
+use uc\server\app\base\Control;
+
+class Pm_clientControl extends Control
 {
 
     function __construct()
-    {
-        $this->pm_clientcontrol();
-    }
-
-    function pm_clientcontrol()
     {
         parent::__construct();
         if (! $this->settings['pmcenter']) {

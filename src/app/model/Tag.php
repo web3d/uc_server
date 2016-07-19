@@ -1,14 +1,8 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: tag.php 1059 2011-03-01 07:25:09Z monkey $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\model;
 
-class tagmodel
+class Tag
 {
 
     var $db;
@@ -16,11 +10,6 @@ class tagmodel
     var $base;
 
     function __construct(&$base)
-    {
-        $this->tagmodel($base);
-    }
-
-    function tagmodel(&$base)
     {
         $this->base = $base;
         $this->db = $base->db;
@@ -73,5 +62,3 @@ class tagmodel
         }
     }
 }
-
-?>

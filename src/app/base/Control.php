@@ -29,11 +29,6 @@ class Control
 
     function __construct()
     {
-        $this->base();
-    }
-
-    function base()
-    {
         $this->init_var();
         $this->init_db();
         $this->init_cache();

@@ -1,12 +1,6 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2009 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: note.php 1122 2011-11-14 03:06:25Z monkey $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\model;
 
 define('UC_NOTE_REPEAT', 2);
 define('UC_NOTE_TIMEOUT', 15);
@@ -14,7 +8,7 @@ define('UC_NOTE_GC', 5);
 
 define('API_RETURN_FAILED', '-1');
 
-class notemodel
+class Note
 {
 
     var $db;
@@ -28,11 +22,6 @@ class notemodel
     var $notetype = 'HTTP';
 
     function __construct(&$base)
-    {
-        $this->notemodel($base);
-    }
-
-    function notemodel(&$base)
     {
         $this->base = $base;
         $this->db = $base->db;
@@ -280,5 +269,3 @@ class notemodel
         return $url . "/api/$apifilename?code=$code";
     }
 }
-
-?>

@@ -1,22 +1,13 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: feed.php 1139 2012-05-08 09:02:11Z liulanbo $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\control;
 
-class feedcontrol extends base
+use uc\server\app\base\Control;
+
+class FeedControl extends Control
 {
 
     function __construct()
-    {
-        $this->feedcontrol();
-    }
-
-    function feedcontrol()
     {
         parent::__construct();
         $this->init_input();
@@ -147,5 +138,3 @@ class feedcontrol extends base
         return $template;
     }
 }
-
-?>

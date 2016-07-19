@@ -1,12 +1,8 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: user.php 1166 2014-11-03 01:49:32Z hypowang $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\control\admin;
+
+use uc\server\app\base\BackendControl as Control;
 
 define('UC_USER_CHECK_USERNAME_FAILED', - 1);
 define('UC_USER_USERNAME_BADWORD', - 2);
@@ -22,15 +18,10 @@ define('UC_LOGIN_ERROR_ADMIN_NOT_EXISTS', - 3);
 define('UC_LOGIN_ERROR_SECCODE', - 4);
 define('UC_LOGIN_ERROR_FAILEDLOGIN', - 5);
 
-class control extends adminbase
+class UserControl extends Control
 {
 
     function __construct()
-    {
-        $this->control();
-    }
-
-    function control()
     {
         parent::__construct();
         if (getgpc('a') != 'login' && getgpc('a') != 'logout') {
@@ -333,5 +324,3 @@ class control extends adminbase
         }
     }
 }
-
-?>

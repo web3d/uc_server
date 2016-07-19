@@ -1,22 +1,13 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: user.php 753 2008-11-14 06:48:25Z cnteacher $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\control;
 
-class versioncontrol extends base
+use uc\server\app\base\Control;
+
+class VersionControl extends Control
 {
 
     function __construct()
-    {
-        $this->versioncontrol();
-    }
-
-    function versioncontrol()
     {
         parent::__construct();
         $this->load('version');
@@ -32,5 +23,3 @@ class versioncontrol extends base
         return $return;
     }
 }
-
-?>

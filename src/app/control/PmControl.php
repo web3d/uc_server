@@ -1,12 +1,8 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: pm.php 1067 2011-03-08 10:06:51Z svn_project_zhangjie $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\control;
+
+use uc\server\app\base\Control;
 
 define('PRIVATEPMTHREADLIMIT_ERROR', - 1);
 define('PMFLOODCTRL_ERROR', - 2);
@@ -15,15 +11,10 @@ define('PMSENDREGDAYS', - 4);
 define('CHATPMTHREADLIMIT_ERROR', - 5);
 define('CHATPMMEMBERLIMIT_ERROR', - 7);
 
-class pmcontrol extends base
+class PmControl extends Control
 {
 
     function __construct()
-    {
-        $this->pmcontrol();
-    }
-
-    function pmcontrol()
     {
         parent::__construct();
         $this->load('user');

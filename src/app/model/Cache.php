@@ -1,12 +1,6 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: cache.php 1059 2011-03-01 07:25:09Z monkey $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\model;
 
 if (! function_exists('file_put_contents')) {
 
@@ -18,7 +12,7 @@ if (! function_exists('file_put_contents')) {
     }
 }
 
-class cachemodel
+class Cache
 {
 
     var $db;
@@ -125,5 +119,3 @@ class cachemodel
         return $_ENV['plugin']->get_plugins();
     }
 }
-
-?>

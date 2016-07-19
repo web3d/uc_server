@@ -1,22 +1,13 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: credit.php 1059 2011-03-01 07:25:09Z monkey $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\control;
 
-class creditcontrol extends base
+use uc\server\app\base\Control;
+
+class CreditControl extends Control
 {
 
     function __construct()
-    {
-        $this->creditcontrol();
-    }
-
-    function creditcontrol()
     {
         parent::__construct();
         $this->init_input();
@@ -52,5 +43,3 @@ class creditcontrol extends base
         exit();
     }
 }
-
-?>

@@ -1,14 +1,8 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: plugin.php 1059 2011-03-01 07:25:09Z monkey $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\model;
 
-class pluginmodel
+class Plugin
 {
 
     var $db;
@@ -16,11 +10,6 @@ class pluginmodel
     var $base;
 
     function __construct(&$base)
-    {
-        $this->pluginmodel($base);
-    }
-
-    function pluginmodel(&$base)
     {
         $this->base = $base;
         $this->db = $base->db;
@@ -101,5 +90,3 @@ class pluginmodel
         return $arr;
     }
 }
-
-?>

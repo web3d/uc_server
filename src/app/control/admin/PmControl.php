@@ -1,22 +1,13 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: pm.php 1066 2011-03-07 09:20:31Z svn_project_zhangjie $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\control\admin;
 
-class control extends adminbase
+use uc\server\app\base\BackendControl as Control;
+
+class PmControl extends Control
 {
 
     function __construct()
-    {
-        $this->control();
-    }
-
-    function control()
     {
         parent::__construct();
         if (! $this->user['isfounder'] && ! $this->user['allowadminpm']) {
@@ -222,5 +213,3 @@ class control extends adminbase
         $this->view->display('admin_pm_clear');
     }
 }
-
-?>

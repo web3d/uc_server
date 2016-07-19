@@ -1,12 +1,6 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: pm.php 1160 2013-10-24 08:04:45Z jeffjzhang $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\model;
 
 define('PMINBALCKLIST_ERROR', - 6);
 define('PMSENDSELF_ERROR', - 8);
@@ -18,7 +12,7 @@ define('PMCHATTYPE_ERROR', - 13);
 define('PMUIDTYPE_ERROR', - 14);
 define('PMDATA_ERROR', - 15);
 
-class pmmodel
+class Pm
 {
 
     var $db;
@@ -26,11 +20,6 @@ class pmmodel
     var $base;
 
     function __construct(&$base)
-    {
-        $this->pmmodel($base);
-    }
-
-    function pmmodel(&$base)
     {
         $this->base = $base;
         $this->db = $base->db;
@@ -922,4 +911,3 @@ class pmmodel
         }
     }
 }
-?>

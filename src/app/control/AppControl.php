@@ -2,15 +2,12 @@
 
 namespace uc\server\app\control;
 
+use uc\server\app\base\Control;
+
 class AppControl extends Control
 {
 
     function __construct()
-    {
-        $this->appcontrol();
-    }
-
-    function appcontrol()
     {
         parent::__construct();
         $this->load('app');
@@ -138,5 +135,3 @@ class AppControl extends Control
         return $arr;
     }
 }
-
-?>

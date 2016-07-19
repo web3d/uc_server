@@ -1,14 +1,8 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: plugin.php 1059 2011-03-01 07:25:09Z monkey $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\base;
 
-class pluginbase extends adminbase
+class PluginControl extends BackendControl
 {
 
     public function serialize($s, $htmlon = 0)
@@ -21,11 +15,6 @@ class pluginbase extends adminbase
     var $plugins = array();
 
     function __construct()
-    {
-        $this->control();
-    }
-
-    function pluginbase()
     {
         parent::__construct();
         $this->check_priv();
@@ -66,5 +55,3 @@ if (! preg_match("/^[\w]{1,64}$/", $a)) {
 if (! @require_once UC_ROOT . "./plugin/$a/plugin.php") {
     exit('Plugin not found');
 }
-
-?>

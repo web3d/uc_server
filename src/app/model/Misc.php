@@ -1,17 +1,11 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: misc.php 1182 2014-11-17 08:57:52Z andyzheng $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\model;
 
 define('UC_ARRAY_SEP_1', 'UC_ARRAY_SEP_1');
 define('UC_ARRAY_SEP_2', 'UC_ARRAY_SEP_2');
 
-class miscmodel
+class Misc
 {
 
     var $db;
@@ -19,11 +13,6 @@ class miscmodel
     var $base;
 
     function __construct(&$base)
-    {
-        $this->miscmodel($base);
-    }
-
-    function miscmodel(&$base)
     {
         $this->base = $base;
         $this->db = $base->db;
@@ -166,5 +155,3 @@ class miscmodel
         return $arr2;
     }
 }
-
-?>

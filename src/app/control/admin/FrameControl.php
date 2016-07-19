@@ -1,14 +1,10 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: frame.php 1059 2011-03-01 07:25:09Z monkey $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\control\admin;
 
-class control extends adminbase
+use uc\server\app\base\BackendControl as Control;
+
+class FrameControl extends Control
 {
 
     var $members;
@@ -18,11 +14,6 @@ class control extends adminbase
     var $friends;
 
     function __construct()
-    {
-        $this->control();
-    }
-
-    function control()
     {
         parent::__construct();
     }
@@ -207,5 +198,3 @@ class control extends adminbase
         return 'update=' . rawurlencode(base64_encode($data)) . '&md5hash=' . substr(md5($_SERVER['HTTP_USER_AGENT'] . implode('', $update) . $this->time), 8, 8) . '&timestamp=' . $this->time;
     }
 }
-
-?>

@@ -1,22 +1,13 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: app.php 1165 2014-10-31 06:58:43Z hypowang $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\control\admin;
 
-class control extends adminbase
+use uc\server\app\base\BackendControl as Control;
+
+class AppControl extends Control
 {
 
     function __construct()
-    {
-        $this->control();
-    }
-
-    function control()
     {
         parent::__construct();
         $this->check_priv();

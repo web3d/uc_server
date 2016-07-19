@@ -1,22 +1,13 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: friend.php 1059 2011-03-01 07:25:09Z monkey $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\control;
 
-class friendcontrol extends base
+use uc\server\app\base\Control;
+
+class FriendControl extends Control
 {
 
     function __construct()
-    {
-        $this->friendcontrol();
-    }
-
-    function friendcontrol()
     {
         parent::__construct();
         $this->init_input();
@@ -61,5 +52,3 @@ class friendcontrol extends base
         return $data;
     }
 }
-
-?>

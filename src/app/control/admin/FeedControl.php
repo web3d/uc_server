@@ -1,14 +1,10 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: feed.php 1059 2011-03-01 07:25:09Z monkey $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\control\admin;
 
-class control extends adminbase
+use uc\server\app\base\BackendControl as Control;
+
+class FeedControl extends Control
 {
 
     var $apps = array();
@@ -16,11 +12,6 @@ class control extends adminbase
     var $operations = array();
 
     function __construct()
-    {
-        $this->control();
-    }
-
-    function control()
     {
         parent::__construct();
         if (! $this->user['isfounder'] && ! $this->user['allowadminnote']) {
@@ -46,5 +37,3 @@ class control extends adminbase
         $this->view->display('admin_feed');
     }
 }
-
-?>

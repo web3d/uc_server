@@ -1,14 +1,8 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: user.php 1179 2014-11-03 07:11:25Z hypowang $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\model;
 
-class usermodel
+class User
 {
 
     var $db;
@@ -16,11 +10,6 @@ class usermodel
     var $base;
 
     function __construct(&$base)
-    {
-        $this->usermodel($base);
-    }
-
-    function usermodel(&$base)
     {
         $this->base = $base;
         $this->db = $base->db;

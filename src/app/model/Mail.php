@@ -1,16 +1,10 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: mail.php 1139 2012-05-08 09:02:11Z liulanbo $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\model;
 
 define('UC_MAIL_REPEAT', 5);
 
-class mailmodel
+class Mail
 {
 
     var $db;
@@ -20,11 +14,6 @@ class mailmodel
     var $apps;
 
     function __construct(&$base)
-    {
-        $this->mailmodel($base);
-    }
-
-    function mailmodel(&$base)
     {
         $this->base = $base;
         $this->db = $base->db;
@@ -167,5 +156,3 @@ class mailmodel
         return $this->db->query("UPDATE " . UC_DBTABLEPRE . "mailqueue SET failures=failures+1 WHERE mailid='$mailid'");
     }
 }
-
-?>

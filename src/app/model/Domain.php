@@ -1,14 +1,8 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: domain.php 1059 2011-03-01 07:25:09Z monkey $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\model;
 
-class domainmodel
+class Domain
 {
 
     var $db;
@@ -16,11 +10,6 @@ class domainmodel
     var $base;
 
     function __construct(&$base)
-    {
-        $this->domainmodel($base);
-    }
-
-    function domainmodel(&$base)
     {
         $this->base = $base;
         $this->db = $base->db;
@@ -60,4 +49,3 @@ class domainmodel
         return $this->db->affected_rows();
     }
 }
-?>

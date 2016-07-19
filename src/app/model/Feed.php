@@ -1,14 +1,8 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: feed.php 1059 2011-03-01 07:25:09Z monkey $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\model;
 
-class feedmodel
+class Feed
 {
 
     var $db;
@@ -20,11 +14,6 @@ class feedmodel
     var $operations = array();
 
     function __construct(&$base)
-    {
-        $this->feedmodel($base);
-    }
-
-    function feedmodel(&$base)
     {
         $this->base = $base;
         $this->db = $base->db;
@@ -58,4 +47,3 @@ class feedmodel
         return $data;
     }
 }
-?>

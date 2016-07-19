@@ -9,11 +9,6 @@ class BackendControl extends Control
 
     function __construct()
     {
-        $this->adminbase();
-    }
-
-    function adminbase()
-    {
         parent::__construct();
         $this->cookie_status = 0;
         $sid = $this->cookie_status ? getgpc('sid', 'C') : rawurlencode(getgpc('sid', 'R'));
@@ -132,5 +127,3 @@ class BackendControl extends Control
         }
     }
 }
-
-?>
