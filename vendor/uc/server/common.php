@@ -4,9 +4,19 @@
  * 通用函数库
  */
 
+if (! function_exists('file_put_contents')) {
+
+    function file_put_contents($filename, $s)
+    {
+        $fp = fopen($filename, 'w');
+        fwrite($fp, $s);
+        fclose($fp);
+    }
+}
+
 function daddslashes($string, $force = 0, $strip = FALSE)
 {
-    if (! MAGIC_QUOTES_GPC || $force) {
+    if ($force) {
         if (is_array($string)) {
             foreach ($string as $key => $val) {
                 $string[$key] = daddslashes($val, $force, $strip);

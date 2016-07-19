@@ -2,16 +2,6 @@
 
 namespace uc\server\app\model;
 
-if (! function_exists('file_put_contents')) {
-
-    function file_put_contents($filename, $s)
-    {
-        $fp = @fopen($filename, 'w');
-        @fwrite($fp, $s);
-        @fclose($fp);
-    }
-}
-
 class Cache
 {
 
@@ -22,11 +12,6 @@ class Cache
     var $map;
 
     function __construct(&$base)
-    {
-        $this->cachemodel($base);
-    }
-
-    function cachemodel(&$base)
     {
         $this->base = $base;
         $this->db = $base->db;
@@ -56,7 +41,7 @@ class Cache
                     $s .= '$_CACHE[\'' . $m . '\'] = ' . var_export($this->$method(), TRUE) . ";\r\n";
                 }
                 $s .= "\r\n?>";
-                @file_put_contents(UC_DATADIR . "./cache/$cachefile.php", $s);
+                file_put_contents(UC_DATADIR . "./cache/$cachefile.php", $s);
             }
         } else {
             foreach ((array) $this->map as $file => $modules) {
@@ -66,7 +51,7 @@ class Cache
                     $s .= '$_CACHE[\'' . $m . '\'] = ' . var_export($this->$method(), TRUE) . ";\r\n";
                 }
                 $s .= "\r\n?>";
-                @file_put_contents(UC_DATADIR . "./cache/$file.php", $s);
+                file_put_contents(UC_DATADIR . "./cache/$file.php", $s);
             }
         }
     }

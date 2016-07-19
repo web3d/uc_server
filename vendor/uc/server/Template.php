@@ -32,10 +32,10 @@ class Template
     public function __construct()
     {
         ob_start();
-        $this->defaulttpldir = UC_ROOT . './view/default';
-        $this->tpldir = UC_ROOT . './view/default';
+        $this->defaulttpldir = UC_APPDIR . '/view/default';
+        $this->tpldir = UC_APPDIR . '/view/default';
         $this->objdir = UC_DATADIR . './view';
-        $this->langfile = UC_ROOT . './view/default/templates.lang.php';
+        $this->langfile = UC_APPDIR . '/view/default/templates.lang.php';
         if (version_compare(PHP_VERSION, '5') == - 1) {
             register_shutdown_function(array(
                 &$this,
@@ -164,7 +164,7 @@ class Template
 
     public function __destruct()
     {
-        if ($_COOKIE['sid']) {}
+        if (getgpc('sid', 'C')) {}
         $sid = rawurlencode($this->sid);
         $searcharray = array(
             "/\<a(\s*[^\>]+\s*)href\=([\"|\']?)([^\"\'\s]+)/ies",

@@ -9,7 +9,7 @@ class MySQLi implements DbInterface
      *
      * @var int 查询次数
      */
-    protected $querynum = 0;
+    public $querynum = 0;
 
     /**
      *
@@ -21,7 +21,7 @@ class MySQLi implements DbInterface
      *
      * @var array sql查询历史语句
      */
-    protected $histories;
+    public $histories;
 
     /**
      *

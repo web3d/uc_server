@@ -15,7 +15,7 @@ class Control
      *
      * @var \uc\server\db\DbInterface
      */
-    protected $db;
+    public $db;
 
     /**
      *
@@ -69,7 +69,7 @@ class Control
         define('FORMHASH', $this->formhash());
         $_GET['page'] = max(1, intval(getgpc('page')));
         
-        include_once UC_ROOT . './view/default/main.lang.php';
+        include_once UC_APPDIR . '/view/default/main.lang.php';
         $this->lang = &$lang;
     }
 
@@ -130,11 +130,9 @@ class Control
 
     private function init_template()
     {
-        $charset = UC_CHARSET;
-        require_once UC_ROOT . 'lib/template.class.php';
-        $this->view = new template();
+        $this->view = new \uc\server\Template();
         $this->view->assign('dbhistories', $this->db->histories);
-        $this->view->assign('charset', $charset);
+        $this->view->assign('charset', UC_CHARSET);
         $this->view->assign('dbquerynum', $this->db->querynum);
         $this->view->assign('user', $this->user);
     }
@@ -155,7 +153,7 @@ class Control
         }
     }
 
-    protected function authcode($string, $operation = 'DECODE', $key = '', $expiry = 0)
+    public function authcode($string, $operation = 'DECODE', $key = '', $expiry = 0)
     {
         $ckey_length = 4;
         
@@ -252,22 +250,19 @@ class Control
         return ($page - 1) * $ppp;
     }
 
-    protected function load($model, $base = NULL, $release = '')
+    public function load($model, $base = NULL, $release = '')
     {
+        global $_ENV;
+        
         $base = $base ? $base : $this;
         if (empty($_ENV[$model])) {
-            $release = ! $release ? RELEASE_ROOT : $release;
-            if (file_exists(UC_ROOT . $release . "model/$model.php")) {
-                require_once UC_ROOT . $release . "model/$model.php";
-            } else {
-                require_once UC_ROOT . "model/$model.php";
-            }
-            eval('$_ENV[$model] = new ' . $model . 'model($base);');
+            $class = '\\uc\\server\\app\\model\\' . ucwords($model);
+            $_ENV[$model] = new $class($base);
         }
         return $_ENV[$model];
     }
 
-    protected function get_setting($k = array(), $decode = FALSE)
+    public function get_setting($k = array(), $decode = FALSE)
     {
         $return = array();
         $sqladd = $k ? "WHERE k IN (" . $this->implode($k) . ")" : '';
@@ -280,7 +275,7 @@ class Control
         return $return;
     }
 
-    protected function set_setting($k, $v, $encode = FALSE)
+    public function set_setting($k, $v, $encode = FALSE)
     {
         $v = is_array($v) || $encode ? addslashes(serialize($v)) : $v;
         $this->db->query("REPLACE INTO " . UC_DBTABLEPRE . "settings SET k='$k', v='$v'");
