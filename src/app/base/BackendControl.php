@@ -1,14 +1,8 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: admin.php 1167 2014-11-03 03:06:21Z hypowang $
- */
-! defined('IN_UC') && exit('Access Denied');
+namespace uc\server\app\base;
 
-class adminbase extends base
+class BackendControl extends Control
 {
 
     var $cookie_status = 0;
