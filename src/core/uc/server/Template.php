@@ -1,12 +1,8 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: template.class.php 1167 2014-11-03 03:06:21Z hypowang $
- */
-class template
+namespace uc\server;
+
+class Template
 {
 
     var $tpldir;
@@ -33,12 +29,7 @@ class template
 
     var $sid;
 
-    function __construct()
-    {
-        $this->template();
-    }
-
-    function template()
+    public function __construct()
     {
         ob_start();
         $this->defaulttpldir = UC_ROOT . './view/default';
@@ -53,18 +44,18 @@ class template
         }
     }
 
-    function assign($k, $v)
+    public function assign($k, $v)
     {
         $this->vars[$k] = $v;
     }
 
-    function display($file)
+    public function display($file)
     {
         extract($this->vars, EXTR_SKIP);
         include $this->gettpl($file);
     }
 
-    function gettpl($file)
+    protected function gettpl($file)
     {
         isset($_REQUEST['inajax']) && ($file == 'header' || $file == 'footer') && $file = $file . '_ajax';
         isset($_REQUEST['inajax']) && ($file == 'admin_header' || $file == 'admin_footer') && $file = substr($file, 6) . '_ajax';
@@ -86,7 +77,7 @@ class template
         return $this->objfile;
     }
 
-    function complie()
+    protected function complie()
     {
         $template = file_get_contents($this->tplfile);
         $template = preg_replace("/\<\!\-\-\{(.+?)\}\-\-\>/s", "{\\1}", $template);
@@ -130,18 +121,18 @@ class template
         fclose($fp);
     }
 
-    function arrayindex($name, $items)
+    protected function arrayindex($name, $items)
     {
         $items = preg_replace("/\[([a-zA-Z_]\w*)\]/is", "['\\1']", $items);
         return "<?=$name$items?>";
     }
 
-    function stripvtag($s)
+    protected function stripvtag($s)
     {
         return preg_replace("/$this->vtag_regexp/is", "\\1", str_replace("\\\"", '"', $s));
     }
 
-    function loopsection($arr, $k, $v, $statement)
+    protected function loopsection($arr, $k, $v, $statement)
     {
         $arr = $this->stripvtag($arr);
         $k = $this->stripvtag($k);
@@ -150,12 +141,12 @@ class template
         return $k ? "<? foreach((array)$arr as $k => $v) {?>$statement<? }?>" : "<? foreach((array)$arr as $v) {?>$statement<? } ?>";
     }
 
-    function lang($k)
+    protected function lang($k)
     {
         return ! empty($this->languages[$k]) ? $this->languages[$k] : "{ $k }";
     }
 
-    function _transsid($url, $tag = '', $wml = 0)
+    private function _transsid($url, $tag = '', $wml = 0)
     {
         $sid = $this->sid;
         $tag = stripslashes($tag);
@@ -171,7 +162,7 @@ class template
         return $tag . $url;
     }
 
-    function __destruct()
+    public function __destruct()
     {
         if ($_COOKIE['sid']) {}
         $sid = rawurlencode($this->sid);

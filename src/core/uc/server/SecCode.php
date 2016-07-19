@@ -1,12 +1,8 @@
 <?php
 
-/*
- * [Discuz!] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: seccode.class.php 1164 2014-10-31 06:58:24Z hypowang $
- */
-class seccode
+namespace uc\server;
+
+class SecCode
 {
 
     var $code;
@@ -43,7 +39,7 @@ class seccode
 
     var $im;
 
-    static function seccode_check($code, $input)
+    public static function seccode_check($code, $input)
     {
         if ($code == '' || $input == '') {
             return false;
@@ -52,7 +48,7 @@ class seccode
         return $input === $code;
     }
 
-    function seccodeconvert(&$seccode)
+    private static function seccodeconvert(&$seccode)
     {
         $s = sprintf('%04s', base_convert($seccode, 10, 20));
         $seccodeunits = 'CEFHKLMNOPQRSTUVWXYZ';
@@ -63,7 +59,7 @@ class seccode
         }
     }
 
-    function display()
+    public function display()
     {
         $this->type == 2 && ! extension_loaded('ming') && $this->type = 0;
         $this->width = $this->width >= 0 && $this->width <= 200 ? $this->width : 150;
@@ -80,12 +76,12 @@ class seccode
         }
     }
 
-    function fileext($filename)
+    private function fileext($filename)
     {
         return trim(substr(strrchr($filename, '.'), 1, 10));
     }
 
-    function image()
+    private function image()
     {
         $bgcontent = $this->background();
         
@@ -110,7 +106,7 @@ class seccode
                 $frame[$i] = ob_get_contents();
                 ob_end_clean();
             }
-            $anim = new GifMerge($frame, 255, 255, 255, 0, $d, $x, $y, 'C_MEMORY');
+            $anim = new \GifMerge($frame, 255, 255, 255, 0, $d, $x, $y, 'C_MEMORY');
             header('Content-type: image/gif');
             echo $anim->getAnimation();
         } else {
@@ -129,7 +125,7 @@ class seccode
         }
     }
 
-    function background()
+    private function background()
     {
         $this->im = imagecreatetruecolor($this->width, $this->height);
         $backgroundcolor = imagecolorallocate($this->im, 255, 255, 255);
@@ -187,7 +183,7 @@ class seccode
         return $bgcontent;
     }
 
-    function adulterate()
+    private function adulterate()
     {
         $linenums = $this->height / 10;
         for ($i = 0; $i <= $linenums; $i ++) {
@@ -205,7 +201,7 @@ class seccode
         }
     }
 
-    function adulteratefont()
+    private function adulteratefont()
     {
         $seccodeunits = 'BCEFGHJKMPQRTVWXY2346789';
         $x = $this->width / 4;
@@ -217,7 +213,7 @@ class seccode
         }
     }
 
-    function ttffont()
+    private function ttffont()
     {
         $seccode = $this->code;
         $charset = isset($GLOBALS['charset']) ? $GLOBALS['charset'] : '';
@@ -240,7 +236,7 @@ class seccode
         if ($this->type && ! empty($seccodettf)) {
             if (strtoupper($charset) != 'UTF-8') {
                 include $this->includepath . 'chinese.class.php';
-                $cvt = new Chinese($charset, 'utf8');
+                $cvt = new \Chinese($charset, 'utf8');
                 $seccode = $cvt->Convert($seccode);
             }
             $seccode = array(
@@ -285,7 +281,7 @@ class seccode
         }
     }
 
-    function giffont()
+    private function giffont()
     {
         $seccode = $this->code;
         $seccodedir = array();
@@ -348,7 +344,7 @@ class seccode
         }
     }
 
-    function flash()
+    private function flash()
     {
         $spacing = 5;
         $codewidth = ($this->width - $spacing * 5) / 4;
@@ -359,7 +355,7 @@ class seccode
         
         ming_setScale(20.00000000);
         ming_useswfversion(6);
-        $movie = new SWFMovie();
+        $movie = new \SWFMovie();
         $movie->setDimension($this->width, $this->height);
         $movie->setBackground(255, 255, 255);
         $movie->setRate(31);
@@ -372,12 +368,12 @@ class seccode
 		$strforswdaction
 		}
 		";
-        $movie->add(new SWFAction(str_replace("\r", "", $strAction)));
+        $movie->add(new \SWFAction(str_replace("\r", "", $strAction)));
         header('Content-type: application/x-shockwave-flash');
         $movie->output();
     }
 
-    function swfcode($width, $d, $code, $order)
+    private function swfcode($width, $d, $code, $order)
     {
         $str = '';
         $height = $this->height - $d * 2;
@@ -466,7 +462,7 @@ class seccode
         return $str;
     }
 
-    function audio()
+    private function audio()
     {
         header('Content-type: audio/mpeg');
         for ($i = 0; $i <= 3; $i ++) {
@@ -474,7 +470,7 @@ class seccode
         }
     }
 
-    function bitmap()
+    private function bitmap()
     {
         $numbers = array(
             'B' => array(

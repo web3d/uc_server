@@ -1,22 +1,13 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: uccode.class.php 1139 2012-05-08 09:02:11Z liulanbo $
- */
-class uccode
+namespace uc\server;
+
+class UCCode
 {
 
-    var $uccodes;
+    protected $uccode = [];
 
-    function __construct()
-    {
-        $this->uccode();
-    }
-
-    function uccode()
+    public function __construct()
     {
         $this->uccode = array(
             'pcodecount' => - 1,
@@ -25,16 +16,16 @@ class uccode
         );
     }
 
-    function codedisp($code)
+    public function codedisp($code)
     {
         $this->uccode['pcodecount'] ++;
         $code = str_replace('\\"', '"', preg_replace("/^[\n\r]*(.+?)[\n\r]*$/is", "\\1", $code));
         $this->uccode['codehtml'][$this->uccode['pcodecount']] = $this->tpl_codedisp($code);
         $this->uccode['codecount'] ++;
-        return "[\tUCENTER_CODE_" . $this->uccode[pcodecount] . "\t]";
+        return "[\tUCENTER_CODE_" . $this->uccode['pcodecount'] . "\t]";
     }
 
-    function complie($message)
+    public function complie($message)
     {
         $message = dhtmlspecialchars($message);
         if (strpos($message, '[/code]') !== FALSE) {
@@ -127,7 +118,7 @@ class uccode
         ), $message));
     }
 
-    function parseurl($url, $text)
+    protected function parseurl($url, $text)
     {
         if (! $url && preg_match("/((https?|ftp|gopher|news|telnet|rtsp|mms|callto|bctp|ed2k|thunder|synacast){1}:\/\/|www\.)[^\[\"']+/i", trim($text), $matches)) {
             $url = $matches[0];
@@ -145,7 +136,7 @@ class uccode
         }
     }
 
-    function parseemail($email, $text)
+    protected function parseemail($email, $text)
     {
         $text = str_replace('\"', '"', $text);
         if (! $email && preg_match("/\s*([a-z0-9\-_.+]+)@([a-z0-9\-_]+[.][a-z0-9\-_.]+)\s*/i", $text, $matches)) {
@@ -156,7 +147,7 @@ class uccode
         }
     }
 
-    function bbcodeurl($url, $tags)
+    protected function bbcodeurl($url, $tags)
     {
         if (! preg_match("/<.+?>/s", $url)) {
             if (! in_array(strtolower(substr($url, 0, 6)), array(
@@ -180,12 +171,12 @@ class uccode
         }
     }
 
-    function tpl_codedisp($code)
+    protected function tpl_codedisp($code)
     {
-        return '<div class="blockcode"><code id="code' . $this->uccodes['codecount'] . '">' . $code . '</code></div>';
+        return '<div class="blockcode"><code id="code' . $this->uccode['codecount'] . '">' . $code . '</code></div>';
     }
 
-    function tpl_quote()
+    protected function tpl_quote()
     {
         return '<div class="quote"><blockquote>\\1</blockquote></div>';
     }

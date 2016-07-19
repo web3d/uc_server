@@ -1,12 +1,8 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2099 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: upload.class.php 1059 2011-03-01 07:25:09Z monkey $
- */
-class upload
+namespace uc\server;
+
+class Upload
 {
 
     var $dir;
@@ -31,7 +27,7 @@ class upload
 
     var $filetypes = array();
 
-    function upload($time = 0)
+    public function __construct($time = 0)
     {
         $this->time = $time ? $time : time();
         $this->filetypedata = array(
@@ -92,26 +88,26 @@ class upload
         }
     }
 
-    function set_dir($dir)
+    public function set_dir($dir)
     {
         $this->dir = $dir;
     }
 
-    function set_thumb($width, $height, $ext = '')
+    public function set_thumb($width, $height, $ext = '')
     {
         $this->thumb_width = $width;
         $this->thumb_height = $height;
         $this->thumb_ext = $ext;
     }
 
-    function set_watermark($file, $pos = 9, $alpha = 100)
+    public function set_watermark($file, $pos = 9, $alpha = 100)
     {
         $this->watermark_file = $file;
         $this->watermark_pos = $pos;
         $this->watermark_alpha = $alpha;
     }
 
-    function execute()
+    public function execute()
     {
         $arr = array();
         $keys = array_keys($_FILES['attach']['name']);
@@ -151,7 +147,7 @@ class upload
         return $arr;
     }
 
-    function mkdir_by_date($date, $dir = '.')
+    public function mkdir_by_date($date, $dir = '.')
     {
         list ($y, $m, $d) = explode('-', date('Y-m-d', $date));
         ! is_dir("$dir/$y") && mkdir("$dir/$y", 0777);
@@ -159,7 +155,7 @@ class upload
         return "$y/$m$d";
     }
 
-    function mkdir_by_hash($s, $dir = '.')
+    public function mkdir_by_hash($s, $dir = '.')
     {
         $s = md5($s);
         ! is_dir($dir . '/' . $s[0]) && mkdir($dir . '/' . $s[0], 0777);
@@ -168,7 +164,7 @@ class upload
         return $s[0] . '/' . $s[1] . '/' . $s[2];
     }
 
-    function mkdir_by_uid($uid, $dir = '.')
+    public function mkdir_by_uid($uid, $dir = '.')
     {
         $uid = sprintf("%09d", $uid);
         $dir1 = substr($uid, 0, 3);
@@ -180,13 +176,13 @@ class upload
         return $dir1 . '/' . $dir2 . '/' . $dir3;
     }
 
-    function copy($sourcefile, $destfile)
+    public function copy($sourcefile, $destfile)
     {
         move_uploaded_file($sourcefile, $destfile);
         @unlink($sourcefile);
     }
 
-    function watermark($target, $watermark_file, $ext, $watermarkstatus = 9, $watermarktrans = 50)
+    public function watermark($target, $watermark_file, $ext, $watermarkstatus = 9, $watermarktrans = 50)
     {
         $gdsurporttype = array();
         if (function_exists('imageAlphaBlending') && function_exists('getimagesize')) {
@@ -289,7 +285,7 @@ class upload
         }
     }
 
-    function thumb($forcedwidth, $forcedheight, $sourcefile, $destfile, $destext, $imgcomp = 0)
+    public function thumb($forcedwidth, $forcedheight, $sourcefile, $destfile, $destext, $imgcomp = 0)
     {
         $g_imgcomp = 100 - $imgcomp;
         $g_srcfile = $sourcefile;
@@ -340,12 +336,12 @@ class upload
         }
     }
 
-    function fileext($filename)
+    private function fileext($filename)
     {
         return substr(strrchr($filename, '.'), 1, 10);
     }
 
-    function get_filetype($ext)
+    public function get_filetype($ext)
     {
         foreach ($this->filetypedata as $k => $v) {
             if (in_array($ext, $v)) {
