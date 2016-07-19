@@ -1,37 +1,88 @@
 <?php
 
-/*
- * [UCenter] (C)2001-2009 Comsenz Inc.
- * This is NOT a freeware, use is subject to license terms
- *
- * $Id: db.class.php 980 2009-12-22 03:12:49Z zhaoxiongfei $
- */
-class ucserver_db
+namespace uc\server\db;
+
+class MySQLi implements DbInterface
 {
 
-    var $querynum = 0;
+    /**
+     *
+     * @var int 查询次数
+     */
+    protected $querynum = 0;
 
-    var $link;
+    /**
+     *
+     * @var \mysqli db底层连接对象
+     */
+    protected $link;
 
-    var $histories;
+    /**
+     *
+     * @var array sql查询历史语句
+     */
+    protected $histories;
 
-    var $dbhost;
+    /**
+     *
+     * @var string db host名 含端口 
+     */
+    protected $dbhost;
 
-    var $dbuser;
+    /**
+     *
+     * @var string db 用户名
+     */
+    protected $dbuser;
 
-    var $dbpw;
+    /**
+     *
+     * @var string db 用户名密码
+     */
+    protected $dbpw;
 
-    var $dbcharset;
+    /**
+     *
+     * @var string db 连接使用的字符串
+     */
+    protected $dbcharset;
 
-    var $pconnect;
+    /**
+     *
+     * @var bool 是否持久连接
+     */
+    protected $pconnect;
 
-    var $tablepre;
+    /**
+     *
+     * @var string 表名前缀
+     */
+    protected $tablepre;
 
-    var $time;
+    /**
+     *
+     * @var int sql缓存时长 
+     */
+    protected $time;
 
-    var $goneaway = 5;
+    /**
+     *
+     * @var int 连接丢失的时间
+     */
+    protected $goneaway = 5;
 
-    function connect($dbhost, $dbuser, $dbpw, $dbname = '', $dbcharset = '', $pconnect = 0, $tablepre = '', $time = 0)
+    /**
+     * db连接
+     * @param string $dbhost
+     * @param string $dbuser
+     * @param string $dbpw
+     * @param string $dbname
+     * @param string $dbcharset
+     * @param bool $pconnect
+     * @param string $tablepre
+     * @param int $time
+     */
+    public function connect($dbhost, $dbuser, $dbpw, $dbname = '', $dbcharset = '', $pconnect = 0, $tablepre = '', $time = 0)
     {
         $this->dbhost = $dbhost;
         $this->dbuser = $dbuser;
@@ -42,7 +93,7 @@ class ucserver_db
         $this->tablepre = $tablepre;
         $this->time = $time;
         
-        if (! $this->link = new mysqli($dbhost, $dbuser, $dbpw, $dbname)) {
+        if (! $this->link = new \mysqli($dbhost, $dbuser, $dbpw, $dbname)) {
             $this->halt('Can not connect to MySQL server');
         }
         
@@ -57,24 +108,46 @@ class ucserver_db
         }
     }
 
-    function fetch_array($query, $result_type = MYSQLI_ASSOC)
+    /**
+     * 
+     * @param \mysqli_result $query
+     * @param string $result_type
+     * @return mixed
+     */
+    public function fetch_array($query, $result_type = MYSQLI_ASSOC)
     {
         return $query ? $query->fetch_array($result_type) : null;
     }
 
-    function result_first($sql)
+    /**
+     * 返回第一条的第一个字段的值
+     * @param string $sql
+     * @return mixed
+     */
+    public function result_first($sql)
     {
         $query = $this->query($sql);
         return $this->result($query, 0);
     }
 
-    function fetch_first($sql)
+    /**
+     * 返回第一行
+     * @param string $sql
+     * @return array
+     */
+    public function fetch_first($sql)
     {
         $query = $this->query($sql);
         return $this->fetch_array($query);
     }
 
-    function fetch_all($sql, $id = '')
+    /**
+     * 返回所有行
+     * @param string $sql
+     * @param string $id
+     * @return array
+     */
+    public function fetch_all($sql, $id = '')
     {
         $arr = array();
         $query = $this->query($sql);
@@ -84,12 +157,19 @@ class ucserver_db
         return $arr;
     }
 
-    function cache_gc()
+    protected function cache_gc()
     {
-        $this->query("DELETE FROM {$this->tablepre}sqlcaches WHERE expiry<$this->time");
+        $this->query("DELETE FROM {$this->tablepre}sqlcaches WHERE expiry < {$this->time}");
     }
 
-    function query($sql, $type = '', $cachetime = FALSE)
+    /**
+     * 根据sql构造查询对象
+     * @param string $sql
+     * @param string $type
+     * @param int $cachetime
+     * @return \mysqli_result
+     */
+    public function query($sql, $type = '', $cachetime = FALSE)
     {
         $resultmode = $type == 'UNBUFFERED' ? MYSQLI_USE_RESULT : MYSQLI_STORE_RESULT;
         if (! ($query = $this->link->query($sql, $resultmode)) && $type != 'SILENT') {
@@ -100,22 +180,40 @@ class ucserver_db
         return $query;
     }
 
-    function affected_rows()
+    /**
+     * 
+     * @return int 影响行数
+     */
+    public function affected_rows()
     {
         return $this->link->affected_rows;
     }
 
-    function error()
+    /**
+     * 
+     * @return string 底层错误消息
+     */
+    public function error()
     {
         return (($this->link) ? $this->link->error : mysqli_error());
     }
 
-    function errno()
+    /**
+     * 
+     * @return int 底层错误编号
+     */
+    public function errno()
     {
         return intval(($this->link) ? $this->link->errno : mysqli_errno());
     }
 
-    function result($query, $row)
+    /**
+     * 
+     * @param \mysqli_result $query
+     * @param int $row offset
+     * @return mixed?
+     */
+    public function result($query, $row)
     {
         if (! $query || $query->num_rows == 0) {
             return null;
@@ -125,54 +223,101 @@ class ucserver_db
         return $assocs[0];
     }
 
-    function num_rows($query)
+    /**
+     * 获取符合条件的记录行数
+     * @param \mysqli_result $query
+     * @return int
+     */
+    public function num_rows($query)
     {
         $query = $query ? $query->num_rows : 0;
         return $query;
     }
 
-    function num_fields($query)
+    /**
+     * 字段数
+     * @param \mysqli_result $query
+     * @return int
+     */
+    public function num_fields($query)
     {
         return $query ? $query->field_count : 0;
     }
 
-    function free_result($query)
+    /**
+     * 
+     * @param \mysqli_result $query
+     * @return bool
+     */
+    public function free_result($query)
     {
         return $query ? $query->free() : false;
     }
 
-    function insert_id()
+    /**
+     * 
+     * @return int 记录插入后返回的主键ID
+     */
+    public function insert_id()
     {
         return ($id = $this->link->insert_id) >= 0 ? $id : $this->result($this->query("SELECT last_insert_id()"), 0);
     }
 
-    function fetch_row($query)
+    /**
+     * 
+     * @param \mysqli_result $query
+     * @return array
+     */
+    public function fetch_row($query)
     {
         $query = $query ? $query->fetch_row() : null;
         return $query;
     }
 
-    function fetch_fields($query)
+    /**
+     * 获取字段定义信息
+     * @param \mysqli_result $query
+     * @return object|bool|null
+     */
+    public function fetch_fields($query)
     {
         return $query ? $query->fetch_field() : null;
     }
 
-    function version()
+    /**
+     * 
+     * @return string db的版本名称
+     */
+    public function version()
     {
         return $this->link->server_info;
     }
 
-    function escape_string($str)
+    /**
+     * 
+     * @param string $str 安全过滤
+     * @return string
+     */
+    public function escape_string($str)
     {
         return $this->link->escape_string($str);
     }
 
-    function close()
+    /**
+     * 
+     * @return bool 关闭链接结果
+     */
+    public function close()
     {
         return $this->link->close();
     }
 
-    function halt($message = '', $sql = '')
+    /**
+     * 终止
+     * @param string $message
+     * @param string $sql
+     */
+    protected function halt($message = '', $sql = '')
     {
         $error = $this->error();
         $errorno = $this->errno();
@@ -189,7 +334,7 @@ class ucserver_db
             }
             $s .= '<b>Error:</b>' . $error . '<br />';
             $s .= '<b>Errno:</b>' . $errorno . '<br />';
-            $s = str_replace(UC_DBTABLEPRE, '[Table]', $s);
+            $s = str_replace($this->tablepre, '[Table]', $s);
             exit($s);
         }
     }

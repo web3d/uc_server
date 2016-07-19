@@ -5,29 +5,37 @@ namespace uc\server\app\base;
 class Control
 {
 
-    var $sid;
+    protected $sid;
 
-    var $time;
+    protected $time;
 
-    var $onlineip;
+    protected $onlineip;
 
-    var $db;
+    /**
+     *
+     * @var \uc\server\db\DbInterface
+     */
+    protected $db;
 
-    var $view;
+    /**
+     *
+     * @var \uc\server\Template 
+     */
+    protected $view;
 
-    var $user = array();
+    protected $user = array();
 
-    var $settings = array();
+    protected $settings = array();
 
-    var $cache = array();
+    protected $cache = array();
 
-    var $app = array();
+    protected $app = array();
 
-    var $lang = array();
+    protected $lang = array();
 
-    var $input = array();
+    protected $input = array();
 
-    function __construct()
+    public function __construct()
     {
         $this->init_var();
         $this->init_db();
@@ -39,7 +47,7 @@ class Control
         $this->init_mail();
     }
 
-    function init_var()
+    private function init_var()
     {
         $this->time = time();
         $cip = getenv('HTTP_CLIENT_IP');
@@ -65,7 +73,7 @@ class Control
         $this->lang = &$lang;
     }
 
-    function init_cache()
+    private function init_cache()
     {
         $this->settings = $this->cache('settings');
         $this->cache['apps'] = $this->cache('apps');
@@ -75,7 +83,7 @@ class Control
         }
     }
 
-    function init_input($getagent = '')
+    private function init_input($getagent = '')
     {
         $input = getgpc('input', 'R');
         if ($input) {
@@ -95,24 +103,19 @@ class Control
         }
     }
 
-    function init_db()
+    private function init_db()
     {
-        if (function_exists("mysql_connect")) {
-            require_once UC_ROOT . 'lib/db.class.php';
-        } else {
-            require_once UC_ROOT . 'lib/dbi.class.php';
-        }
-        $this->db = new ucserver_db();
+        $this->db = \uc\server\Db::instance();
         $this->db->connect(UC_DBHOST, UC_DBUSER, UC_DBPW, UC_DBNAME, UC_DBCHARSET, UC_DBCONNECT, UC_DBTABLEPRE);
     }
 
-    function init_app()
+    private function init_app()
     {
         $appid = intval(getgpc('appid'));
         $appid && $this->app = $this->cache['apps'][$appid];
     }
 
-    function init_user()
+    private function init_user()
     {
         if (isset($_COOKIE['uc_auth'])) {
             @list ($uid, $username, $agent) = explode('|', $this->authcode($_COOKIE['uc_auth'], 'DECODE', ($this->input ? $this->app['appauthkey'] : UC_KEY)));
@@ -125,7 +128,7 @@ class Control
         }
     }
 
-    function init_template()
+    private function init_template()
     {
         $charset = UC_CHARSET;
         require_once UC_ROOT . 'lib/template.class.php';
@@ -136,7 +139,7 @@ class Control
         $this->view->assign('user', $this->user);
     }
 
-    function init_note()
+    private function init_note()
     {
         if ($this->note_exists() && ! getgpc('inajax')) {
             $this->load('note');
@@ -144,7 +147,7 @@ class Control
         }
     }
 
-    function init_mail()
+    private function init_mail()
     {
         if ($this->mail_exists() && ! getgpc('inajax')) {
             $this->load('mail');
@@ -152,7 +155,7 @@ class Control
         }
     }
 
-    function authcode($string, $operation = 'DECODE', $key = '', $expiry = 0)
+    protected function authcode($string, $operation = 'DECODE', $key = '', $expiry = 0)
     {
         $ckey_length = 4;
         
@@ -202,7 +205,7 @@ class Control
         }
     }
 
-    function page($num, $perpage, $curpage, $mpurl)
+    protected function page($num, $perpage, $curpage, $mpurl)
     {
         $multipage = '';
         $mpurl .= strpos($mpurl, '?') ? '&' : '?';
@@ -242,14 +245,14 @@ class Control
         return $multipage;
     }
 
-    function page_get_start($page, $ppp, $totalnum)
+    protected function page_get_start($page, $ppp, $totalnum)
     {
         $totalpage = ceil($totalnum / $ppp);
         $page = max(1, min($totalpage, intval($page)));
         return ($page - 1) * $ppp;
     }
 
-    function load($model, $base = NULL, $release = '')
+    protected function load($model, $base = NULL, $release = '')
     {
         $base = $base ? $base : $this;
         if (empty($_ENV[$model])) {
@@ -264,7 +267,7 @@ class Control
         return $_ENV[$model];
     }
 
-    function get_setting($k = array(), $decode = FALSE)
+    protected function get_setting($k = array(), $decode = FALSE)
     {
         $return = array();
         $sqladd = $k ? "WHERE k IN (" . $this->implode($k) . ")" : '';
@@ -277,13 +280,13 @@ class Control
         return $return;
     }
 
-    function set_setting($k, $v, $encode = FALSE)
+    protected function set_setting($k, $v, $encode = FALSE)
     {
         $v = is_array($v) || $encode ? addslashes(serialize($v)) : $v;
         $this->db->query("REPLACE INTO " . UC_DBTABLEPRE . "settings SET k='$k', v='$v'");
     }
 
-    function message($message, $redirect = '', $type = 0, $vars = array())
+    protected function message($message, $redirect = '', $type = 0, $vars = array())
     {
         include_once UC_ROOT . 'view/default/messages.lang.php';
         if (isset($lang[$message])) {
@@ -306,29 +309,29 @@ class Control
         exit();
     }
 
-    function formhash()
+    protected function formhash()
     {
         return substr(md5(substr($this->time, 0, - 4) . UC_KEY), 16);
     }
 
-    function submitcheck()
+    protected function submitcheck()
     {
         return @getgpc('formhash', 'P') == FORMHASH ? true : false;
     }
 
-    function date($time, $type = 3)
+    protected function date($time, $type = 3)
     {
         $format[] = $type & 2 ? (! empty($this->settings['dateformat']) ? $this->settings['dateformat'] : 'Y-n-j') : '';
         $format[] = $type & 1 ? (! empty($this->settings['timeformat']) ? $this->settings['timeformat'] : 'H:i') : '';
         return gmdate(implode(' ', $format), $time + $this->settings['timeoffset']);
     }
 
-    function implode($arr)
+    protected function implode($arr)
     {
         return "'" . implode("','", (array) $arr) . "'";
     }
 
-    function set_home($uid, $dir = '.')
+    protected function set_home($uid, $dir = '.')
     {
         $uid = sprintf("%09d", $uid);
         $dir1 = substr($uid, 0, 3);
@@ -339,7 +342,7 @@ class Control
         ! is_dir($dir . '/' . $dir1 . '/' . $dir2 . '/' . $dir3) && mkdir($dir . '/' . $dir1 . '/' . $dir2 . '/' . $dir3, 0777);
     }
 
-    function get_home($uid)
+    protected function get_home($uid)
     {
         $uid = sprintf("%09d", $uid);
         $dir1 = substr($uid, 0, 3);
@@ -348,7 +351,7 @@ class Control
         return $dir1 . '/' . $dir2 . '/' . $dir3;
     }
 
-    function get_avatar($uid, $size = 'big', $type = '')
+    protected function get_avatar($uid, $size = 'big', $type = '')
     {
         $size = in_array($size, array(
             'big',
@@ -364,7 +367,7 @@ class Control
         return $dir1 . '/' . $dir2 . '/' . $dir3 . '/' . substr($uid, - 2) . $typeadd . "_avatar_$size.jpg";
     }
 
-    function &cache($cachefile)
+    protected function &cache($cachefile)
     {
         static $_CACHE = array();
         if (! isset($_CACHE[$cachefile])) {
@@ -379,12 +382,12 @@ class Control
         return $_CACHE[$cachefile];
     }
 
-    function input($k)
+    protected function input($k)
     {
         return isset($this->input[$k]) ? (is_array($this->input[$k]) ? $this->input[$k] : trim($this->input[$k])) : NULL;
     }
 
-    function serialize($s, $htmlon = 0)
+    protected function serialize($s, $htmlon = 0)
     {
         if (file_exists(UC_ROOT . RELEASE_ROOT . './lib/xml.class.php')) {
             include_once UC_ROOT . RELEASE_ROOT . './lib/xml.class.php';
@@ -395,7 +398,7 @@ class Control
         return xml_serialize($s, $htmlon);
     }
 
-    function unserialize($s)
+    protected function unserialize($s)
     {
         if (file_exists(UC_ROOT . RELEASE_ROOT . './lib/xml.class.php')) {
             include_once UC_ROOT . RELEASE_ROOT . './lib/xml.class.php';
@@ -406,7 +409,7 @@ class Control
         return xml_unserialize($s);
     }
 
-    function cutstr($string, $length, $dot = ' ...')
+    protected function cutstr($string, $length, $dot = ' ...')
     {
         if (strlen($string) <= $length) {
             return $string;
@@ -489,7 +492,7 @@ class Control
         return $strcut . $dot;
     }
 
-    function setcookie($key, $value, $life = 0, $httponly = false)
+    protected function setcookie($key, $value, $life = 0, $httponly = false)
     {
         (! defined('UC_COOKIEPATH')) && define('UC_COOKIEPATH', '/');
         (! defined('UC_COOKIEDOMAIN')) && define('UC_COOKIEDOMAIN', '');
@@ -509,7 +512,7 @@ class Control
         }
     }
 
-    function note_exists()
+    protected function note_exists()
     {
         $noteexists = $this->db->result_first("SELECT value FROM " . UC_DBTABLEPRE . "vars WHERE name='noteexists'");
         if (empty($noteexists)) {
@@ -519,7 +522,7 @@ class Control
         }
     }
 
-    function mail_exists()
+    protected function mail_exists()
     {
         $mailexists = $this->db->result_first("SELECT value FROM " . UC_DBTABLEPRE . "vars WHERE name='mailexists'");
         if (empty($mailexists)) {
@@ -529,7 +532,7 @@ class Control
         }
     }
 
-    function dstripslashes($string)
+    protected function dstripslashes($string)
     {
         if (is_array($string)) {
             foreach ($string as $key => $val) {
@@ -541,5 +544,3 @@ class Control
         return $string;
     }
 }
-
-?>
