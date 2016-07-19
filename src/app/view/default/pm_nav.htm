@@ -29,15 +29,30 @@ function ctlent(event) {
 </script>
 
 <div class="ucnav">
-<a <!--{if $filter == 'newpm'}-->class="ucontype" <!--{/if}-->href="index.php?m=pm_client&a=ls&filter=newpm">{lang new_pm}<!--{if $unreadpmnum}--><strong>[{$unreadpmnum}]</strong><!--{/if}--></a>
-<a <!--{if $filter == 'privatepm'}-->class="ucontype" <!--{/if}-->href="index.php?m=pm_client&a=ls&filter=privatepm">{lang private_pm}<!--{if $pmnum_private}--><strong>[{$pmnum_private}]</strong><!--{/if}--></a>
-<a <!--{if $folder == 'blackls'}-->class="ucontype" <!--{/if}-->href="index.php?m=pm_client&a=ls&folder=blackls">{lang pm_ignorelist}</a>
-<a <!--{if $folder == 'send'}-->class="ucontype sendpmontype" <!--{else}--> class="sendpm" <!--{/if}-->href="index.php?m=pm_client&a=send&folder=send">{lang pm_send}</a>
+	<a
+		<!--{if $filter == 'newpm'}-->class="ucontype" <!--{/if}-->href="index.php?m=pm_client&a=ls&filter=newpm">{lang
+		new_pm}<!--{if $unreadpmnum}-->
+		<strong>[{$unreadpmnum}]</strong>
+	<!--{/if}--></a> <a
+		<!--{if $filter == 'privatepm'}-->class="ucontype" <!--{/if}-->href="index.php?m=pm_client&a=ls&filter=privatepm">{lang
+		private_pm}<!--{if $pmnum_private}-->
+		<strong>[{$pmnum_private}]</strong>
+	<!--{/if}--></a> <a
+		<!--{if $folder == 'blackls'}-->class="ucontype" <!--{/if}-->href="index.php?m=pm_client&a=ls&folder=blackls">{lang
+		pm_ignorelist}
+	</a> <a
+		<!--{if $folder == 'send'}-->class="ucontype sendpmontype" <!--{else}-->
+		class="sendpm" <!--{/if}-->href="index.php?m=pm_client&a=send&folder=send">{lang
+		pm_send}
+	</a>
 
-<!--{if $unreadpmnum}-->
-	<span class="navinfo">
-		<img src="images/default/newpm.gif" />
-		<!--{if $unreadpmnum}--><strong>$unreadpmnum</strong> <a <!--{if $filter == 'newpm'}-->class="ontype" <!--{/if}-->href="index.php?m=pm_client&a=ls&filter=newpm">{lang pm_unread}</a><!--{/if}-->
+	<!--{if $unreadpmnum}-->
+	<span class="navinfo"> <img src="images/default/newpm.gif" /> <!--{if $unreadpmnum}-->
+		<strong>$unreadpmnum</strong> <a
+			<!--{if $filter == 'newpm'}-->class="ontype" <!--{/if}-->href="index.php?m=pm_client&a=ls&filter=newpm">{lang
+			pm_unread}
+	</a>
+	<!--{/if}-->
 	</span>
-<!--{/if}-->
+	<!--{/if}-->
 </div>

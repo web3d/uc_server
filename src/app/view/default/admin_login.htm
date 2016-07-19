@@ -6,10 +6,11 @@ function $(id) {
 </script>
 
 <div class="container">
-	<form action="admin.php?m=user&a=login" method="post" id="loginform" {if $iframe}target="_self"{else}target="_top"{/if}>
-		<input type="hidden" name="formhash" value="{FORMHASH}" />
-		<input type="hidden" name="seccodehidden" value="$seccodeinit" />
-		<input type="hidden" name="iframe" value="{$iframe}" />
+	<form action="admin.php?m=user&a=login" method="post" id="loginform"
+		{if $iframe}target="_self" {else}target="_top"{/if}>
+		<input type="hidden" name="formhash" value="{FORMHASH}" /> <input
+			type="hidden" name="seccodehidden" value="$seccodeinit" /> <input
+			type="hidden" name="iframe" value="{$iframe}" />
 		<table class="mainbox">
 			<tr>
 				<td class="loginbox">
@@ -17,20 +18,53 @@ function $(id) {
 					<p>{lang login_tips}</p>
 				</td>
 				<td class="login">
-					<!--{if $errorcode == UC_LOGIN_ERROR_FOUNDER_PW}--><div class="errormsg loginmsg"><p>{lang login_founder_incorrect}</p></div>
-					<!--{elseif $errorcode == UC_LOGIN_ERROR_ADMIN_PW}--><div class="errormsg loginmsg"><p>{lang login_incorrect}</p></div>
-					<!--{elseif $errorcode == UC_LOGIN_ERROR_ADMIN_NOT_EXISTS}--><div class="errormsg loginmsg"><p>{lang login_admin_noexists}</p></div>
-					<!--{elseif $errorcode == UC_LOGIN_ERROR_SECCODE}--><div class="errormsg loginmsg"><p>{lang login_seccode_error}</p></div>
-					<!--{elseif $errorcode == UC_LOGIN_ERROR_FAILEDLOGIN}--><div class="errormsg loginmsg"><p>{lang login_failedlogin}</p></div>
-					<!--{/if}-->
+					<!--{if $errorcode == UC_LOGIN_ERROR_FOUNDER_PW}-->
+					<div class="errormsg loginmsg">
+						<p>{lang login_founder_incorrect}</p>
+					</div> <!--{elseif $errorcode == UC_LOGIN_ERROR_ADMIN_PW}-->
+					<div class="errormsg loginmsg">
+						<p>{lang login_incorrect}</p>
+					</div> <!--{elseif $errorcode == UC_LOGIN_ERROR_ADMIN_NOT_EXISTS}-->
+					<div class="errormsg loginmsg">
+						<p>{lang login_admin_noexists}</p>
+					</div> <!--{elseif $errorcode == UC_LOGIN_ERROR_SECCODE}-->
+					<div class="errormsg loginmsg">
+						<p>{lang login_seccode_error}</p>
+					</div> <!--{elseif $errorcode == UC_LOGIN_ERROR_FAILEDLOGIN}-->
+					<div class="errormsg loginmsg">
+						<p>{lang login_failedlogin}</p>
+					</div> <!--{/if}-->
 					<p>
-						<input type="radio" name="isfounder" value="1" class="radio" {if (isset($_POST['isfounder']) && $isfounder) || !isset($_POST['isfounder'])}checked="checked"{/if} onclick="changeuser('founder')" id="founder" /><label for="founder">{lang founder}</label>
-						<input type="radio" name="isfounder" value="0" class="radio" {if (isset($_POST['isfounder']) && !$isfounder)}checked="checked"{/if} onclick="changeuser('manager')" id="admin" /><label for="admin">{lang admin_admin}</label>
+						<input type="radio" name="isfounder" value="1" class="radio" {if
+							(isset($_POST['isfounder']) && $isfounder) || !isset($_POST['isfounder'])}checked="checked"
+							{/if} onclick="changeuser('founder')" id="founder" /><label
+							for="founder">{lang founder}</label> <input type="radio"
+							name="isfounder" value="0" class="radio" {if
+							(isset($_POST['isfounder']) && !$isfounder)}checked="checked"
+							{/if} onclick="changeuser('manager')" id="admin" /><label
+							for="admin">{lang admin_admin}</label>
 					</p>
-					<p id="usernamediv">{lang login_username}: <input type="text" name="username" class="txt" tabindex="1" id="username" value="$username" /></p>
-					<p>{lang login_password}: <input type="password" name="password" class="txt" tabindex="2" id="password" value="$password" /></p>
-					<p>{lang login_seccode}: <input type="text" name="seccode" class="txt seccode" tabindex="2" id="seccode" value="" /><img width="70" height="21" src="admin.php?m=seccode&seccodeauth=$seccodeinit&{eval echo rand();}" class="checkcode" /></p>
-					<p class="loginbtn"><input type="submit" name="submit" value="{lang login_submit}" class="btn" tabindex="3" /><a href="http://faq.comsenz.com/viewnews-925" target="_blank" class="rstpsw">{lang login_getpw}</a></p>
+					<p id="usernamediv">
+						{lang login_username}: <input type="text" name="username"
+							class="txt" tabindex="1" id="username" value="$username" />
+					</p>
+					<p>
+						{lang login_password}: <input type="password" name="password"
+							class="txt" tabindex="2" id="password" value="$password" />
+					</p>
+					<p>
+						{lang login_seccode}: <input type="text" name="seccode"
+							class="txt seccode" tabindex="2" id="seccode" value="" /><img
+							width="70" height="21"
+							src="admin.php?m=seccode&seccodeauth=$seccodeinit&{eval echo rand();}"
+							class="checkcode" />
+					</p>
+					<p class="loginbtn">
+						<input type="submit" name="submit" value="{lang login_submit}"
+							class="btn" tabindex="3" /><a
+							href="http://faq.comsenz.com/viewnews-925" target="_blank"
+							class="rstpsw">{lang login_getpw}</a>
+					</p>
 				</td>
 			</tr>
 		</table>
@@ -62,5 +96,8 @@ function changeuser(user) {
 	}
 }
 </script>
-<div class="footer">Powered by UCenter {UC_SERVER_VERSION} &copy; 2001 - 2011 <a href="http://www.comsenz.com/" target="_blank">Comsenz</a> Inc.</div>
+<div class="footer">
+	Powered by UCenter {UC_SERVER_VERSION} &copy; 2001 - 2011 <a
+		href="http://www.comsenz.com/" target="_blank">Comsenz</a> Inc.
+</div>
 {template footer}
