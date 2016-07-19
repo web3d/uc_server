@@ -1,13 +1,13 @@
 <?php
 
-namespace uc\server\app\control;
+namespace uc\server\app\control\admin;
 
 use uc\server\app\base\Control;
 
 class SecCodeControl extends Control
 {
 
-    function __construct()
+    public function __construct()
     {
         parent::__construct();
         $authkey = md5(UC_KEY . $_SERVER['HTTP_USER_AGENT'] . $this->onlineip);
@@ -21,7 +21,7 @@ class SecCodeControl extends Control
         @header("Pragma: no-cache");
         
         include_once UC_ROOT . 'lib/seccode.class.php';
-        $code = new seccode();
+        $code = new \uc\server\SecCode();
         $code->code = $seccode;
         $code->type = 0;
         $code->width = 70;
