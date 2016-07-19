@@ -9,8 +9,8 @@
 
 class seccode {
 
-	var $code;			//100000-999999 ·¶Î§ÄÚËæ»ú
-	var $type 	= 0;		//0 Ó¢ÎÄÍ¼Æ¬ÑéÖ¤Âë  1 ÖĞÎÄÍ¼Æ¬ÑéÖ¤Âë  2 Flash ÑéÖ¤Âë  3 ÓïÒôÑéÖ¤Âë
+	var $code;			//100000-999999 èŒƒå›´å†…éšæœº
+	var $type 	= 0;		//0 è‹±æ–‡å›¾ç‰‡éªŒè¯ç   1 ä¸­æ–‡å›¾ç‰‡éªŒè¯ç   2 Flash éªŒè¯ç   3 è¯­éŸ³éªŒè¯ç 
 	var $width 	= 0;
 	var $height 	= 0;
 	var $background	= 1;
@@ -20,8 +20,8 @@ class seccode {
 	var $color 	= 1;
 	var $size 	= 0;
 	var $shadow 	= 1;
-	var $animator 	= 0;		//GIF ¶¯»­
-	var $fontpath	= '';		//TTF ×Ö¿âÄ¿Â¼
+	var $animator 	= 0;		//GIF åŠ¨ç”»
+	var $fontpath	= '';		//TTF å­—åº“ç›®å½•
 	var $datapath	= '';
 	var $includepath= '';
 
