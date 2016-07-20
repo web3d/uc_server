@@ -78,9 +78,9 @@ class DbControl extends Control
             $url .= '&code=' . urlencode($code);
             $res = $_ENV['misc']->dfopen2($url, 0, '', '', 1, $app['ip'], 20, TRUE);
             if ($res == '1') {
-                $this->message($this->_parent_js($appid, '<img src="images/correct.gif" border="0" class="statimg" /><span class="green">' . $this->lang['dumpfile_exists'] . '</span>') . '<script>parent.import_status[' . $appid . ']=true;</script>');
+                $this->message($this->_parent_js($appid, '<img src="static/images/correct.gif" border="0" class="statimg" /><span class="green">' . $this->lang['dumpfile_exists'] . '</span>') . '<script>parent.import_status[' . $appid . ']=true;</script>');
             } else {
-                $this->message($this->_parent_js($appid, '<img src="images/error.gif" border="0" class="statimg" /><span class="red">' . $this->lang['dumpfile_not_exists'] . '</span>') . '<script>parent.import_status[' . $appid . ']=false;</script>');
+                $this->message($this->_parent_js($appid, '<img src="static/images/error.gif" border="0" class="statimg" /><span class="red">' . $this->lang['dumpfile_not_exists'] . '</span>') . '<script>parent.import_status[' . $appid . ']=false;</script>');
             }
             exit();
         } else {

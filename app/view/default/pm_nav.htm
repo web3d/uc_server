@@ -13,10 +13,10 @@ function toggle_collapse(objname, ctrlobj) {
 	var obj = document.getElementById(objname);
 	if(obj.style.display == '') {
 		obj.style.display = 'none';
-		ctrlobj.innerHTML = '<img src="images/default/spread.gif" />';
+		ctrlobj.innerHTML = '<img src="static/images/default/spread.gif" />';
 	} else {
 		obj.style.display = '';
-		ctrlobj.innerHTML = '<img src="images/default/shrink.gif" />';
+		ctrlobj.innerHTML = '<img src="static/images/default/shrink.gif" />';
 	}
 }
 
@@ -47,7 +47,7 @@ function ctlent(event) {
 	</a>
 
 	<!--{if $unreadpmnum}-->
-	<span class="navinfo"> <img src="images/default/newpm.gif" /> <!--{if $unreadpmnum}-->
+	<span class="navinfo"> <img src="static/images/default/newpm.gif" /> <!--{if $unreadpmnum}-->
 		<strong>$unreadpmnum</strong> <a
 			<!--{if $filter == 'newpm'}-->class="ontype" <!--{/if}-->href="index.php?m=pm_client&a=ls&filter=newpm">{lang
 			pm_unread}

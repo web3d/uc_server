@@ -162,7 +162,7 @@ $languages = array(
     'app_charset' => '字符集',
     'app_dbcharset' => '数据库字符集',
     'app_detail' => '详情',
-    'app_detail_tips' => '如果出现 <img src="images/error.gif" /> <font color="red">通信失败</font>，请点击“编辑”尝试设置应用域名对应的 IP。',
+    'app_detail_tips' => '如果出现 <img src="static/images/error.gif" /> <font color="red">通信失败</font>，请点击“编辑”尝试设置应用域名对应的 IP。',
     'app_edit' => '编辑',
     'app_setting' => '编辑应用',
     'app_type' => '应用类型',

@@ -4,7 +4,7 @@ namespace uc\server\app\control\admin;
 
 use uc\server\app\base\Control;
 
-class SecCodeControl extends Control
+class SeccodeControl extends Control
 {
 
     public function __construct()
@@ -20,7 +20,6 @@ class SecCodeControl extends Control
         @header("Cache-Control: no-store, private, post-check=0, pre-check=0, max-age=0", FALSE);
         @header("Pragma: no-cache");
         
-        include_once UC_ROOT . 'lib/seccode.class.php';
         $code = new \uc\server\SecCode();
         $code->code = $seccode;
         $code->type = 0;
@@ -34,8 +33,8 @@ class SecCodeControl extends Control
         $code->size = 0;
         $code->shadow = 1;
         $code->animator = 0;
-        $code->fontpath = UC_ROOT . 'images/fonts/';
-        $code->datapath = UC_ROOT . 'images/';
+        $code->fontpath = UC_ROOT . 'static/images/fonts/';
+        $code->datapath = UC_ROOT . 'static/images/';
         $code->includepath = '';
         $code->display();
     }
