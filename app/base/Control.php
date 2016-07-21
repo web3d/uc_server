@@ -62,21 +62,8 @@ class Control
     private function init_var()
     {
         $this->time = time();
-        $cip = getenv('HTTP_CLIENT_IP');
-        $xip = getenv('HTTP_X_FORWARDED_FOR');
-        $rip = getenv('REMOTE_ADDR');
-        $srip = $_SERVER['REMOTE_ADDR'];
-        if ($cip && strcasecmp($cip, 'unknown')) {
-            $this->onlineip = $cip;
-        } elseif ($xip && strcasecmp($xip, 'unknown')) {
-            $this->onlineip = $xip;
-        } elseif ($rip && strcasecmp($rip, 'unknown')) {
-            $this->onlineip = $rip;
-        } elseif ($srip && strcasecmp($srip, 'unknown')) {
-            $this->onlineip = $srip;
-        }
-        preg_match("/[\d\.]{7,15}/", $this->onlineip, $match);
-        $this->onlineip = $match[0] ? $match[0] : 'unknown';
+        
+        $this->onlineip = uc_clientip();
         
         define('FORMHASH', $this->formhash());
         $_GET['page'] = max(1, intval(getgpc('page')));
@@ -134,8 +121,8 @@ class Control
             if ($agent != md5($_SERVER['HTTP_USER_AGENT'])) {
                 $this->setcookie('uc_auth', '');
             } else {
-                @$this->user['uid'] = $uid;
-                @$this->user['username'] = $username;
+                $this->user['uid'] = $uid;
+                $this->user['username'] = $username;
             }
         }
     }
@@ -152,114 +139,31 @@ class Control
     private function init_note()
     {
         if ($this->note_exists() && ! getgpc('inajax')) {
-            $this->load('note');
-            $_ENV['note']->send();
+            $this->load('note')->send();
         }
     }
 
     private function init_mail()
     {
         if ($this->mail_exists() && ! getgpc('inajax')) {
-            $this->load('mail');
-            $_ENV['mail']->send();
+            $this->load('mail')->send();
         }
     }
 
     public function authcode($string, $operation = 'DECODE', $key = '', $expiry = 0)
     {
-        $ckey_length = 4;
-        
-        $key = md5($key ? $key : UC_KEY);
-        $keya = md5(substr($key, 0, 16));
-        $keyb = md5(substr($key, 16, 16));
-        $keyc = $ckey_length ? ($operation == 'DECODE' ? substr($string, 0, $ckey_length) : substr(md5(microtime()), - $ckey_length)) : '';
-        
-        $cryptkey = $keya . md5($keya . $keyc);
-        $key_length = strlen($cryptkey);
-        
-        $string = $operation == 'DECODE' ? base64_decode(substr($string, $ckey_length)) : sprintf('%010d', $expiry ? $expiry + time() : 0) . substr(md5($string . $keyb), 0, 16) . $string;
-        $string_length = strlen($string);
-        
-        $result = '';
-        $box = range(0, 255);
-        
-        $rndkey = array();
-        for ($i = 0; $i <= 255; $i ++) {
-            $rndkey[$i] = ord($cryptkey[$i % $key_length]);
-        }
-        
-        for ($j = $i = 0; $i < 256; $i ++) {
-            $j = ($j + $box[$i] + $rndkey[$i]) % 256;
-            $tmp = $box[$i];
-            $box[$i] = $box[$j];
-            $box[$j] = $tmp;
-        }
-        
-        for ($a = $j = $i = 0; $i < $string_length; $i ++) {
-            $a = ($a + 1) % 256;
-            $j = ($j + $box[$a]) % 256;
-            $tmp = $box[$a];
-            $box[$a] = $box[$j];
-            $box[$j] = $tmp;
-            $result .= chr(ord($string[$i]) ^ ($box[($box[$a] + $box[$j]) % 256]));
-        }
-        
-        if ($operation == 'DECODE') {
-            if ((substr($result, 0, 10) == 0 || substr($result, 0, 10) - time() > 0) && substr($result, 10, 16) == substr(md5(substr($result, 26) . $keyb), 0, 16)) {
-                return substr($result, 26);
-            } else {
-                return '';
-            }
-        } else {
-            return $keyc . str_replace('=', '', base64_encode($result));
-        }
+        return uc_authcode($string, $operation, $key ? : UC_KEY, $expiry);
     }
 
     protected function page($num, $perpage, $curpage, $mpurl)
     {
-        $multipage = '';
-        $mpurl .= strpos($mpurl, '?') ? '&' : '?';
-        if ($num > $perpage) {
-            $page = 10;
-            $offset = 2;
-            
-            $pages = @ceil($num / $perpage);
-            
-            if ($page > $pages) {
-                $from = 1;
-                $to = $pages;
-            } else {
-                $from = $curpage - $offset;
-                $to = $from + $page - 1;
-                if ($from < 1) {
-                    $to = $curpage + 1 - $from;
-                    $from = 1;
-                    if ($to - $from < $page) {
-                        $to = $page;
-                    }
-                } elseif ($to > $pages) {
-                    $from = $pages - $page + 1;
-                    $to = $pages;
-                }
-            }
-            
-            $multipage = ($curpage - $offset > 1 && $pages > $page ? '<a href="' . $mpurl . 'page=1" class="first"' . $ajaxtarget . '>1 ...</a>' : '') . ($curpage > 1 && ! $simple ? '<a href="' . $mpurl . 'page=' . ($curpage - 1) . '" class="prev"' . $ajaxtarget . '>&lsaquo;&lsaquo;</a>' : '');
-            for ($i = $from; $i <= $to; $i ++) {
-                $multipage .= $i == $curpage ? '<strong>' . $i . '</strong>' : '<a href="' . $mpurl . 'page=' . $i . ($ajaxtarget && $i == $pages && $autogoto ? '#' : '') . '"' . $ajaxtarget . '>' . $i . '</a>';
-            }
-            
-            $multipage .= ($curpage < $pages && ! $simple ? '<a href="' . $mpurl . 'page=' . ($curpage + 1) . '" class="next"' . $ajaxtarget . '>&rsaquo;&rsaquo;</a>' : '') . ($to < $pages ? '<a href="' . $mpurl . 'page=' . $pages . '" class="last"' . $ajaxtarget . '>... ' . $realpages . '</a>' : '') . (! $simple && $pages > $page && ! $ajaxtarget ? '<kbd><input type="text" name="custompage" size="3" onkeydown="if(event.keyCode==13) {window.location=\'' . $mpurl . 'page=\'+this.value; return false;}" /></kbd>' : '');
-            
-            $multipage = $multipage ? '<div class="pages">' . (! $simple ? '<em>&nbsp;' . $num . '&nbsp;</em>' : '') . $multipage . '</div>' : '';
-        }
-        return $multipage;
+        
+        return (new \uc\server\Pager())->output($num, $perpage, $curpage, $mpurl);
     }
 
     public function page_get_start($page, $ppp, $totalnum)
     {
-        $totalpage = ceil($totalnum / $ppp);
-        $page = max(1, min($totalpage, intval($page)));
-        return ($page - 1) * $ppp;
+        return (new \uc\server\Pager())->getStart($page, $ppp, $totalnum);
     }
 
     public function load($model, $base = NULL, $release = '')
@@ -293,44 +197,43 @@ class Control
         $this->db->query("REPLACE INTO " . UC_DBTABLEPRE . "settings SET k='$k', v='$v'");
     }
 
-    protected function message($message, $redirect = '', $type = 0, $vars = array())
+    /**
+     * 显示提示消息页面
+     * @param string $message 提示消息,字符串中可以定义占位符 如 :username
+     * @param string $redirect 跳转url 可以是站内url 也可是站外url
+     * @param int $type 0 - 普通页面 1 - 客户端
+     * @param array $vars 消息格式中相应待动态替换的值定义 [':username' => 'jimmy']
+     */
+    protected function message($message, $redirect = '', $type = 0, $vars =[])
     {
-        include_once UC_ROOT . 'view/default/messages.lang.php';
+        include UC_APPDIR . '/view/default/messages.lang.php';
         if (isset($lang[$message])) {
-            $message = $lang[$message] ? str_replace(array_keys($vars), array_values($vars), $lang[$message]) : $message;
+            $message = str_replace(array_keys($vars), array_values($vars), $lang[$message]);
         }
         $this->view->assign('message', $message);
-        if (! strpos($redirect, 'sid=') && (! strpos($redirect, 'ttp://'))) {
-            if (! strpos($redirect, '?')) {
-                $redirect .= '?sid=' . $this->sid;
-            } else {
-                $redirect .= '&sid=' . $this->sid;
-            }
+        if (! strpos($redirect, 'sid=') && (false === strpos($redirect, 'http://'))) {
+                $redirect .= ! strpos($redirect, '?') ? '?' : '&';
+                $redirect .= 'sid=' . $this->sid;
         }
         $this->view->assign('redirect', $redirect);
-        if ($type == 0) {
-            $this->view->display('message');
-        } elseif ($type == 1) {
-            $this->view->display('message_client');
-        }
+        
+        $this->view->display(($type == 1) ? 'message_client' : 'message');
         exit();
     }
 
     protected function formhash()
     {
-        return substr(md5(substr($this->time, 0, - 4) . UC_KEY), 16);
+        return uc_formhash($this->time, UC_KEY);
     }
 
     protected function submitcheck()
     {
-        return @getgpc('formhash', 'P') == FORMHASH ? true : false;
+        return getgpc('formhash', 'P') == FORMHASH ? true : false;
     }
 
     protected function date($time, $type = 3)
     {
-        $format[] = $type & 2 ? (! empty($this->settings['dateformat']) ? $this->settings['dateformat'] : 'Y-n-j') : '';
-        $format[] = $type & 1 ? (! empty($this->settings['timeformat']) ? $this->settings['timeformat'] : 'H:i') : '';
-        return gmdate(implode(' ', $format), $time + $this->settings['timeoffset']);
+        return uc_gmdate($time, $type, $this->settings['dateformat'], $this->settings['timeformat'], $this->settings['timeoffset']);
     }
 
     protected function implode($arr)
@@ -383,7 +286,7 @@ class Control
                 $this->load('cache');
                 $_ENV['cache']->updatedata($cachefile);
             } else {
-                include_once $cachepath;
+                include $cachepath;
             }
         }
         return $_CACHE[$cachefile];
@@ -396,107 +299,17 @@ class Control
 
     protected function serialize($s, $htmlon = 0)
     {
-        if (file_exists(UC_ROOT . RELEASE_ROOT . './lib/xml.class.php')) {
-            include_once UC_ROOT . RELEASE_ROOT . './lib/xml.class.php';
-        } else {
-            include_once UC_ROOT . './lib/xml.class.php';
-        }
-        
         return xml_serialize($s, $htmlon);
     }
 
     protected function unserialize($s)
     {
-        if (file_exists(UC_ROOT . RELEASE_ROOT . './lib/xml.class.php')) {
-            include_once UC_ROOT . RELEASE_ROOT . './lib/xml.class.php';
-        } else {
-            include_once UC_ROOT . './lib/xml.class.php';
-        }
-        
         return xml_unserialize($s);
     }
 
     protected function cutstr($string, $length, $dot = ' ...')
     {
-        if (strlen($string) <= $length) {
-            return $string;
-        }
-        
-        $string = str_replace(array(
-            '&amp;',
-            '&quot;',
-            '&lt;',
-            '&gt;'
-        ), array(
-            '&',
-            '"',
-            '<',
-            '>'
-        ), $string);
-        
-        $strcut = '';
-        if (strtolower(UC_CHARSET) == 'utf-8') {
-            
-            $n = $tn = $noc = 0;
-            while ($n < strlen($string)) {
-                
-                $t = ord($string[$n]);
-                if ($t == 9 || $t == 10 || (32 <= $t && $t <= 126)) {
-                    $tn = 1;
-                    $n ++;
-                    $noc ++;
-                } elseif (194 <= $t && $t <= 223) {
-                    $tn = 2;
-                    $n += 2;
-                    $noc += 2;
-                } elseif (224 <= $t && $t < 239) {
-                    $tn = 3;
-                    $n += 3;
-                    $noc += 2;
-                } elseif (240 <= $t && $t <= 247) {
-                    $tn = 4;
-                    $n += 4;
-                    $noc += 2;
-                } elseif (248 <= $t && $t <= 251) {
-                    $tn = 5;
-                    $n += 5;
-                    $noc += 2;
-                } elseif ($t == 252 || $t == 253) {
-                    $tn = 6;
-                    $n += 6;
-                    $noc += 2;
-                } else {
-                    $n ++;
-                }
-                
-                if ($noc >= $length) {
-                    break;
-                }
-            }
-            if ($noc > $length) {
-                $n -= $tn;
-            }
-            
-            $strcut = substr($string, 0, $n);
-        } else {
-            for ($i = 0; $i < $length; $i ++) {
-                $strcut .= ord($string[$i]) > 127 ? $string[$i] . $string[++ $i] : $string[$i];
-            }
-        }
-        
-        $strcut = str_replace(array(
-            '&',
-            '"',
-            '<',
-            '>'
-        ), array(
-            '&amp;',
-            '&quot;',
-            '&lt;',
-            '&gt;'
-        ), $strcut);
-        
-        return $strcut . $dot;
+        return uc_custr($string, $length, $dot);
     }
 
     protected function setcookie($key, $value, $life = 0, $httponly = false)
