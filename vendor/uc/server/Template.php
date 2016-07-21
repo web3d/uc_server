@@ -81,28 +81,28 @@ class Template
     {
         $template = file_get_contents($this->tplfile);
         $template = preg_replace("/\<\!\-\-\{(.+?)\}\-\-\>/s", "{\\1}", $template);
-        $template = preg_replace("/\{lang\s+(\w+?)\}/ise", "\$this->lang('\\1')", $template);
+        $template = preg_replace_callback("/\{lang\s+(\w+?)\}/is", [$this, 'lang'], $template);
         
         $template = preg_replace("/\{($this->var_regexp)\}/", "<?=\\1?>", $template);
         $template = preg_replace("/\{($this->const_regexp)\}/", "<?=\\1?>", $template);
         $template = preg_replace("/(?<!\<\?\=|\\\\)$this->var_regexp/", "<?=\\0?>", $template);
         
-        $template = preg_replace("/\<\?=(\@?\\\$[a-zA-Z_]\w*)((\[[\\$\[\]\w]+\])+)\?\>/ies", "\$this->arrayindex('\\1', '\\2')", $template);
+        $template = preg_replace_callback("/\<\?=(\@?\\\$[a-zA-Z_]\w*)((\[[\\$\[\]\w]+\])+)\?\>/is", [$this, 'arrayindex'], $template);
         
-        $template = preg_replace("/\{\{eval (.*?)\}\}/ies", "\$this->stripvtag('<? \\1?>')", $template);
-        $template = preg_replace("/\{eval (.*?)\}/ies", "\$this->stripvtag('<? \\1?>')", $template);
-        $template = preg_replace("/\{for (.*?)\}/ies", "\$this->stripvtag('<? for(\\1) {?>')", $template);
+        $template = preg_replace_callback("/\{\{eval (.*?)\}\}/is", [$this, 'stripvtag_eval'], $template);
+        $template = preg_replace_callback("/\{eval (.*?)\}/is", [$this, 'stripvtag_eval'], $template);
+        $template = preg_replace_callback("/\{for (.*?)\}/is", [$this, 'stripvtag_for_start'], $template);
         
-        $template = preg_replace("/\{elseif\s+(.+?)\}/ies", "\$this->stripvtag('<? } elseif(\\1) { ?>')", $template);
+        $template = preg_replace_callback("/\{elseif\s+(.+?)\}/is", [$this, 'stripvtag_elseif'], $template);
         
         for ($i = 0; $i < 2; $i ++) {
-            $template = preg_replace("/\{loop\s+$this->vtag_regexp\s+$this->vtag_regexp\s+$this->vtag_regexp\}(.+?)\{\/loop\}/ies", "\$this->loopsection('\\1', '\\2', '\\3', '\\4')", $template);
-            $template = preg_replace("/\{loop\s+$this->vtag_regexp\s+$this->vtag_regexp\}(.+?)\{\/loop\}/ies", "\$this->loopsection('\\1', '', '\\2', '\\3')", $template);
+            $template = preg_replace_callback("/\{loop\s+$this->vtag_regexp\s+$this->vtag_regexp\s+$this->vtag_regexp\}(.+?)\{\/loop\}/is", [$this, 'loopsection_1'], $template);
+            $template = preg_replace_callback("/\{loop\s+$this->vtag_regexp\s+$this->vtag_regexp\}(.+?)\{\/loop\}/is", [$this, 'loopsection_2'], $template);
         }
-        $template = preg_replace("/\{if\s+(.+?)\}/ies", "\$this->stripvtag('<? if(\\1) { ?>')", $template);
+        $template = preg_replace_callback("/\{if\s+(.+?)\}/is", [$this, 'stripvtag_if_start'], $template);
         
         $template = preg_replace("/\{template\s+(\w+?)\}/is", "<? include \$this->gettpl('\\1');?>", $template);
-        $template = preg_replace("/\{template\s+(.+?)\}/ise", "\$this->stripvtag('<? include \$this->gettpl(\\1); ?>')", $template);
+        $template = preg_replace_callback("/\{template\s+(.+?)\}/is", [$this, 'stripvtag_include'], $template);
         
         $template = preg_replace("/\{else\}/is", "<? } else { ?>", $template);
         $template = preg_replace("/\{\/if\}/is", "<? } ?>", $template);
@@ -121,19 +121,67 @@ class Template
         fclose($fp);
     }
 
-    protected function arrayindex($name, $items)
+    protected function arrayindex(array $matches)
     {
+        $name = $matches[1];
+        $items = $matches[2];
+        
         $items = preg_replace("/\[([a-zA-Z_]\w*)\]/is", "['\\1']", $items);
         return "<?=$name$items?>";
+    }
+    
+    private function stripvtag_if_start(array $matches)
+    {
+        $s = '<? if (' . $matches[1] . ') { ?>';
+        return $this->stripvtag($s);
+    }
+    
+    private function stripvtag_elseif(array $matches)
+    {
+        $s = '<? } elseif (' . $matches[1] . ') { ?>';
+        return $this->stripvtag($s);
+    }
+    
+    private function stripvtag_for_start(array $matches)
+    {
+        $s = '<? for (' . $matches[1] . ') { ?>';
+        return $this->stripvtag($s);
+    }
+    
+    private function stripvtag_eval(array $matches)
+    {
+        $s = '<? ' . $matches[1] . ' ?>';
+        return $this->stripvtag($s);
+    }
+    
+    private function stripvtag_include(array $matches)
+    {
+        $s = '<? include \$this->gettpl(' . $matches[1] . '); ?>';
+        return $this->stripvtag($s);
     }
 
     protected function stripvtag($s)
     {
+        
         return preg_replace("/$this->vtag_regexp/is", "\\1", str_replace("\\\"", '"', $s));
     }
 
-    protected function loopsection($arr, $k, $v, $statement)
+    protected function loopsection_1(array $matches)
     {
+        list ($_, $arr, $k, $v, $statement) = $matches;
+        
+        $arr = $this->stripvtag($arr);
+        $k = $this->stripvtag($k);
+        $v = $this->stripvtag($v);
+        $statement = str_replace("\\\"", '"', $statement);
+        return $k ? "<? foreach((array)$arr as $k => $v) {?>$statement<? }?>" : "<? foreach((array)$arr as $v) {?>$statement<? } ?>";
+    }
+    
+    protected function loopsection_2(array $matches)
+    {
+        list ($_, $arr, $v, $statement) = $matches;
+        $k = '';
+        
         $arr = $this->stripvtag($arr);
         $k = $this->stripvtag($k);
         $v = $this->stripvtag($v);
@@ -141,8 +189,9 @@ class Template
         return $k ? "<? foreach((array)$arr as $k => $v) {?>$statement<? }?>" : "<? foreach((array)$arr as $v) {?>$statement<? } ?>";
     }
 
-    protected function lang($k)
+    protected function lang(array $matches)
     {
+        $k = $matches[1];
         return ! empty($this->languages[$k]) ? $this->languages[$k] : "{ $k }";
     }
 
