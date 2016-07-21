@@ -1,4 +1,5 @@
 #uc_server
 
+本项目原本是创建 Discuz uc_server 组件镜像,目前已同步到 v1.6.0 20141101 版本.
 
-Discuz uc_server 组件，oschina 镜像 同步到 v1.6.0 20141101 
+后续,产生了基于PHP命名空间改写的一个想法,所以做了当前的尝试.
