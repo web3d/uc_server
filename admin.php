@@ -20,6 +20,7 @@ require UC_APPDIR . '/release.php';
 
 require UC_VENDORDIR . '/autoloader.php';
 $loader->map('uc\\server\\app', UC_APPDIR);
+$loader->map('uc\\server\\plugin', UC_ROOT . 'plugin');
 $loader->register();
 
 require UC_VENDORDIR . '/uc/server/common.php';
