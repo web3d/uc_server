@@ -1,8 +1,14 @@
 <?php
 
-namespace uc\server\app\base;
+namespace uc\server\app\control\admin;
 
-class PluginControl extends BackendControl
+use uc\server\app\base\BackendControl as Control;
+
+/**
+ * 插件控制器
+ * 既是插件控制器的基类,也是插件端入口类
+ */
+class PluginControl extends Control
 {
 
     public function serialize($s, $htmlon = 0)
@@ -14,7 +20,7 @@ class PluginControl extends BackendControl
 
     var $plugins = array();
 
-    function __construct()
+    public function __construct()
     {
         parent::__construct();
         $this->check_priv();
@@ -35,23 +41,25 @@ class PluginControl extends BackendControl
         $this->view->objdir = UC_DATADIR . './view';
     }
 
-    function _call($a, $arg)
+    public function _call($a, $arg)
     {
+        
+        $a = getgpc('a');
+        if (! preg_match("/^[\w]{1,64}$/", $a)) {
+            exit('Argument Invalid');
+        }
+
+        $pc_class = '\\uc\\server\\plugin\\' . $a . '\\Control';
+        $pc = new $pc_class;
+        
         $do = getgpc('do');
         $do = empty($do) ? 'onindex' : 'on' . $do;
-        if (method_exists($this, $do) && $do{0} != '_') {
-            $this->$do();
-        } else {
-            exit('Plugin module not found');
+        if (method_exists($pc, $do)) {
+            $pc->$do();
         }
+
+        exit('Plugin module not found');
+        
     }
 }
 
-$a = getgpc('a');
-$do = getgpc('do');
-if (! preg_match("/^[\w]{1,64}$/", $a)) {
-    exit('Argument Invalid');
-}
-if (! @require_once UC_ROOT . "./plugin/$a/plugin.php") {
-    exit('Plugin not found');
-}

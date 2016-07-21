@@ -1,19 +1,22 @@
 <?php
-! defined('IN_UC') && exit('Access Denied');
 
-class control extends pluginbase
+namespace uc\server\plugin\filecheck;
+
+use uc\server\app\control\admin\PluginControl;
+
+class Control extends PluginControl
 {
 
     var $md5data = array();
 
-    function control()
+    public function __construct()
     {
-        $this->pluginbase();
+        parent::__construct();
     }
 
     function onindex()
     {
-        if (! $ucfiles = @file(UC_ROOT . './control/admin/ucfiles.md5')) {
+        if (! $ucfiles = @file(UC_APPDIR . '/control/admin/ucfiles.md5')) {
             $this->message('file_check_failed');
         }
         
