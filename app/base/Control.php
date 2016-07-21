@@ -5,11 +5,11 @@ namespace uc\server\app\base;
 class Control
 {
 
-    protected $sid;
+    public $sid;
 
-    protected $time;
+    public $time;
 
-    protected $onlineip;
+    public $onlineip;
 
     /**
      *
@@ -23,17 +23,29 @@ class Control
      */
     protected $view;
 
-    protected $user = array();
+    public $user = [
+        'allowadminsetting' => false,
+        'isfounder' => false,
+        'allowadminapp' => false,
+        'allowadminuser' => false,
+        'allowadminpm' => false,
+        'allowadmincredits' => false,
+        'allowadminbadword' => false,
+        'allowadmindomain' => false,
+        'allowadmindb' => false,
+        'allowadmincache' => false,
+        'allowadminnote' => false,
+    ];
 
-    protected $settings = array();
+    public $settings = array();
 
-    protected $cache = array();
+    public $cache = array();
 
-    protected $app = array();
+    public $app = array();
 
-    protected $lang = array();
+    public $lang = array();
 
-    protected $input = array();
+    public $input = array();
 
     public function __construct()
     {
@@ -243,7 +255,7 @@ class Control
         return $multipage;
     }
 
-    protected function page_get_start($page, $ppp, $totalnum)
+    public function page_get_start($page, $ppp, $totalnum)
     {
         $totalpage = ceil($totalnum / $ppp);
         $page = max(1, min($totalpage, intval($page)));
