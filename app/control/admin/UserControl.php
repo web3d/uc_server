@@ -59,8 +59,8 @@ class UserControl extends Control
                 $seccodehidden = urldecode(getgpc('seccodehidden', 'P'));
                 $seccode = strtoupper(getgpc('seccode', 'P'));
                 $seccodehidden = $this->authcode($seccodehidden, 'DECODE', $authkey);
-                require UC_ROOT . './lib/seccode.class.php';
-                if (! seccode::seccode_check($seccodehidden, $seccode)) {
+                
+                if (! \uc\server\SecCode::seccode_check($seccodehidden, $seccode)) {
                     $errorcode = UC_LOGIN_ERROR_SECCODE;
                 } else {
                     $errorcode = UC_LOGIN_SUCCEED;
@@ -158,7 +158,7 @@ class UserControl extends Control
 
     function onls()
     {
-        include_once UC_ROOT . 'view/default/admin.lang.php';
+        include_once UC_APPDIR . '/view/default/admin.lang.php';
         
         $status = 0;
         if (! empty($_POST['addname']) && $this->submitcheck()) {
