@@ -145,6 +145,7 @@ class FrameControl extends Control
         $error = array();
         foreach ($notelist as $note) {
             foreach ($applist as $k => $app) {
+                $error[$k] = 0;
                 if ($note['app' . $app['appid']] < 0) {
                     $error[$k] ++;
                 }
