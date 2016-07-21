@@ -17,7 +17,6 @@ class Plugin
 
     function get_plugins()
     {
-        include_once UC_ROOT . './lib/xml.class.php';
         $arr = array();
         $dir = UC_ROOT . './plugin';
         $d = opendir($dir);
@@ -37,7 +36,6 @@ class Plugin
     function get_plugin($pluginname)
     {
         $f = file_get_contents(UC_ROOT . "./plugin/$pluginname/plugin.xml");
-        include_once UC_ROOT . './lib/xml.class.php';
         return xml_unserialize($f);
     }
 
