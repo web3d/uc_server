@@ -18,7 +18,7 @@ class Domain
     function add_domain($domain, $ip)
     {
         if ($domain) {
-            $this->db->query("INSERT INTO " . UC_DBTABLEPRE . "domains SET domain='$domain', ip='$ip'");
+            $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "domains SET domain='$domain', ip='$ip'");
         }
         return $this->db->insert_id();
     }
@@ -39,13 +39,13 @@ class Domain
     function delete_domain($arr)
     {
         $domainids = $this->base->implode($arr);
-        $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "domains WHERE id IN ($domainids)");
+        $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "domains WHERE id IN ($domainids)");
         return $this->db->affected_rows();
     }
 
     function update_domain($domain, $ip, $id)
     {
-        $this->db->query("UPDATE " . UC_DBTABLEPRE . "domains SET domain='$domain', ip='$ip' WHERE id='$id'");
+        $this->db->execute("UPDATE " . UC_DBTABLEPRE . "domains SET domain='$domain', ip='$ip' WHERE id='$id'");
         return $this->db->affected_rows();
     }
 }

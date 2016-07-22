@@ -102,7 +102,7 @@ class AppControl extends Control
                 $extra = serialize(array(
                     'apppath' => getgpc('apppath', 'P')
                 ));
-                $this->db->query("INSERT INTO " . UC_DBTABLEPRE . "applications SET name='$name', url='$url', ip='$ip',
+                $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "applications SET name='$name', url='$url', ip='$ip',
 					viewprourl='$viewprourl', apifilename='$apifilename', authkey='$authkey', synlogin='$synlogin',
 					type='$type', recvnote='$recvnote', extra='$extra',
 					tagtemplates='$tagtemplates'");
@@ -204,7 +204,7 @@ class AppControl extends Control
             $tagtemplates = $this->serialize($tagtemplates, 1);
             
             $extra = addslashes(serialize($app['extra']));
-            $this->db->query("UPDATE " . UC_DBTABLEPRE . "applications SET appid='$appid', name='$name', url='$url',
+            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "applications SET appid='$appid', name='$name', url='$url',
 				type='$type', ip='$ip', viewprourl='$viewprourl', apifilename='$apifilename', authkey='$authkey',
 				synlogin='$synlogin', recvnote='$recvnote', extra='$extra',
 				tagtemplates='$tagtemplates'

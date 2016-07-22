@@ -250,7 +250,7 @@ class DbControl extends Control
             $tabledump .= $create[1];
             
             $tablestatus = $this->db->fetch_first("SHOW TABLE STATUS LIKE '$table'");
-            $tabledump .= ($tablestatus['Auto_increment'] && strpos($create[1], 'AUTO_INCREMENT') === FALSE ? " AUTO_INCREMENT=$tablestatus[Auto_increment]" : '') . ";\n\n";
+            $tabledump .= ($tablestatus['Auto_increment'] && strpos($create[1], 'AUTO_INCREMENT') === FALSE ? " AUTO_INCREMENT={$tablestatus['Auto_increment']}" : '') . ";\n\n";
         }
         
         $tabledumped = 0;

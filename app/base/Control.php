@@ -17,7 +17,7 @@ class Control
 
     /**
      *
-     * @var \uc\server\db\DbInterface
+     * @var \uc\server\Db
      */
     public $db;
 
@@ -104,7 +104,7 @@ class Control
     private function init_db()
     {
         $this->db = \uc\server\Db::instance();
-        $this->db->connect(UC_DBHOST, UC_DBUSER, UC_DBPW, UC_DBNAME, UC_DBCHARSET, UC_DBCONNECT, UC_DBTABLEPRE);
+        //$this->db->connect(UC_DBHOST, UC_DBUSER, UC_DBPW, UC_DBNAME, UC_DBCHARSET, UC_DBCONNECT, UC_DBTABLEPRE);
     }
 
     private function init_app()
@@ -193,7 +193,7 @@ class Control
     public function set_setting($k, $v, $encode = FALSE)
     {
         $v = is_array($v) || $encode ? addslashes(serialize($v)) : $v;
-        $this->db->query("REPLACE INTO " . UC_DBTABLEPRE . "settings SET k='$k', v='$v'");
+        $this->db->execute("REPLACE INTO " . UC_DBTABLEPRE . "settings SET k='$k', v='$v'");
     }
 
     /**

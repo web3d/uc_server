@@ -151,9 +151,9 @@ class User
         $password = md5(md5($password) . $salt);
         $sqladd = $uid ? "uid='" . intval($uid) . "'," : '';
         $sqladd .= $questionid > 0 ? " secques='" . $this->quescrypt($questionid, $answer) . "'," : " secques='',";
-        $this->db->query("INSERT INTO " . UC_DBTABLEPRE . "members SET $sqladd username='$username', password='$password', email='$email', regip='$regip', regdate='" . $this->base->time . "', salt='$salt'");
+        $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "members SET $sqladd username='$username', password='$password', email='$email', regip='$regip', regdate='" . $this->base->time . "', salt='$salt'");
         $uid = $this->db->insert_id();
-        $this->db->query("INSERT INTO " . UC_DBTABLEPRE . "memberfields SET uid='$uid'");
+        $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "memberfields SET uid='$uid'");
         return $uid;
     }
 
@@ -182,7 +182,7 @@ class User
             }
         }
         if ($sqladd || $emailadd) {
-            $this->db->query("UPDATE " . UC_DBTABLEPRE . "members SET $sqladd WHERE username='$username'");
+            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "members SET $sqladd WHERE username='$username'");
             return $this->db->affected_rows();
         } else {
             return - 7;
@@ -203,8 +203,8 @@ class User
         }
         $uids = $this->base->implode(array_diff($uidsarr, $puids));
         if ($uids) {
-            $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "members WHERE uid IN($uids)");
-            $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "memberfields WHERE uid IN($uids)");
+            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "members WHERE uid IN($uids)");
+            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "memberfields WHERE uid IN($uids)");
             $this->delete_useravatar($uidsarr);
             $this->base->load('note');
             $_ENV['note']->add('deleteuser', "ids=$uids");
@@ -289,12 +289,12 @@ class User
         
         if (empty($ip_check) || ($this->base->time - $ip_check['lastupdate'] > $expire)) {
             $ip_check = array();
-            $this->db->query("REPLACE INTO " . UC_DBTABLEPRE . "failedlogins (ip, count, lastupdate) VALUES ('{$ip}', '0', '{$this->base->time}')");
+            $this->db->execute("REPLACE INTO " . UC_DBTABLEPRE . "failedlogins (ip, count, lastupdate) VALUES ('{$ip}', '0', '{$this->base->time}')");
         }
         
         if (empty($user_check) || ($this->base->time - $user_check['lastupdate'] > $expire)) {
             $user_check = array();
-            $this->db->query("REPLACE INTO " . UC_DBTABLEPRE . "failedlogins (ip, count, lastupdate) VALUES ('{$username}', '0', '{$this->base->time}')");
+            $this->db->execute("REPLACE INTO " . UC_DBTABLEPRE . "failedlogins (ip, count, lastupdate) VALUES ('{$username}', '0', '{$this->base->time}')");
         }
         
         if ($ip_check || $user_check) {
@@ -302,7 +302,7 @@ class User
             return $time_left;
         }
         
-        $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "failedlogins WHERE lastupdate<" . ($this->base->time - ($expire + 1)), 'UNBUFFERED');
+        $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "failedlogins WHERE lastupdate<" . ($this->base->time - ($expire + 1)), 'UNBUFFERED');
         
         return $check_times;
     }
@@ -313,6 +313,6 @@ class User
         if (! $ip) {
             $ip = $this->base->onlineip;
         }
-        $this->db->query("UPDATE " . UC_DBTABLEPRE . "failedlogins SET count=count+1, lastupdate='" . $this->base->time . "' WHERE ip='" . $ip . "' OR ip='$username'");
+        $this->db->execute("UPDATE " . UC_DBTABLEPRE . "failedlogins SET count=count+1, lastupdate='" . $this->base->time . "' WHERE ip='" . $ip . "' OR ip='$username'");
     }
 }

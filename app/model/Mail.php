@@ -2,22 +2,16 @@
 
 namespace uc\server\app\model;
 
-class Mail
+use uc\server\app\base\Model;
+
+/**
+ * 邮件队列管理模型
+ */
+class Mail extends Model
 {
     const UC_MAIL_REPEAT = 5;
-
-    protected $db;
-
-    protected $base;
-
-    protected $apps;
-
-    public function __construct(&$base)
-    {
-        $this->base = $base;
-        $this->db = $base->db;
-        $this->apps = &$this->base->cache['apps'];
-    }
+    
+    protected $tableName = '{{%mailqueue}}';
 
     public function get_total_num()
     {
@@ -46,7 +40,7 @@ class Mail
     public function delete_mail(array $ids)
     {
         $ids = $this->base->implode($ids);
-        $this->db->query("DELETE FROM {{%mailqueue}} WHERE mailid IN ($ids)");
+        $this->db->execute("DELETE FROM {{%mailqueue}} WHERE mailid IN ($ids)");
         return $this->db->affected_rows();
     }
 
@@ -66,9 +60,9 @@ class Mail
                 $values_arr[] = "('', '$email', '{$mail['subject']}', '{$mail['message']}', '{$mail['frommail']}', '{$mail['charset']}', '{$mail['htmlon']}', '{$mail['level']}', '{$mail['dateline']}', '0', '{$mail['appid']}')";
             }
             $sql .= implode(',', $values_arr);
-            $this->db->query($sql);
+            $this->db->execute($sql);
             $insert_id = $this->db->insert_id();
-            $insert_id && $this->db->query("REPLACE INTO {{%vars}} SET name='mailexists', value='1'");
+            $insert_id && $this->db->execute("REPLACE INTO {{%vars}} SET name='mailexists', value='1'");
             return $insert_id;
         } else {
             $mail['email_to'] = array();
@@ -105,21 +99,21 @@ class Mail
     {
         $mail = $this->_get_mail();
         if (empty($mail)) {
-            $this->db->query("REPLACE INTO {{%vars}} SET name='mailexists', value='0'");
+            $this->db->execute("REPLACE INTO {{%vars}} SET name='mailexists', value='0'");
             return NULL;
+        }
+        
+        $mail['email_to'] = $mail['tomail'] ? $mail['tomail'] : $mail['username'] . '<' . $mail['email'] . '>';
+        if ($this->send_one_mail($mail)) {
+            $this->_delete_one_mail($mail['mailid']);
+            return true;
         } else {
-            $mail['email_to'] = $mail['tomail'] ? $mail['tomail'] : $mail['username'] . '<' . $mail['email'] . '>';
-            if ($this->send_one_mail($mail)) {
-                $this->_delete_one_mail($mail['mailid']);
-                return true;
-            } else {
-                $this->_update_failures($mail['mailid']);
-                return false;
-            }
+            $this->_update_failures($mail['mailid']);
+            return false;
         }
     }
 
-    public function send_by_id($mailid)
+    public function send_by_id(int $mailid)
     {
         if ($this->send_one_mail($this->_get_mail_by_id($mailid))) {
             $this->_delete_one_mail($mailid);
@@ -138,25 +132,23 @@ class Mail
 
     private function _get_mail()
     {
-        $data = $this->db->fetch_first("SELECT m.*, u.username, u.email FROM {{%mailqueue}} m LEFT JOIN {{%members}} u ON m.touid=u.uid WHERE failures<'" . UC_MAIL_REPEAT . "' ORDER BY level DESC, mailid ASC LIMIT 1");
+        $data = $this->db->fetch_first("SELECT m.*, u.username, u.email FROM {{%mailqueue}} m LEFT JOIN {{%members}} u ON m.touid=u.uid WHERE failures<'" . self::UC_MAIL_REPEAT . "' ORDER BY level DESC, mailid ASC LIMIT 1");
         return $data;
     }
 
-    private function _get_mail_by_id($mailid)
+    private function _get_mail_by_id(int $mailid)
     {
         $data = $this->db->fetch_first("SELECT m.*, u.username, u.email FROM {{%mailqueue}} m LEFT JOIN {{%members}} u ON m.touid=u.uid WHERE mailid='$mailid'");
         return $data;
     }
 
-    private function _delete_one_mail($mailid)
+    private function _delete_one_mail(int $mailid)
     {
-        $mailid = intval($mailid);
-        return $this->db->query("DELETE FROM {{%mailqueue}} WHERE mailid='$mailid'");
+        return $this->db->execute("DELETE FROM {{%mailqueue}} WHERE mailid='$mailid'");
     }
 
-    private function _update_failures($mailid)
+    private function _update_failures(int $mailid)
     {
-        $mailid = intval($mailid);
-        return $this->db->query("UPDATE {{%mailqueue}} SET failures=failures+1 WHERE mailid='$mailid'");
+        return $this->db->execute("UPDATE {{%mailqueue}} SET failures=failures+1 WHERE mailid='$mailid'");
     }
 }

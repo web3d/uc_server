@@ -242,7 +242,7 @@ class UserControl extends Control
         foreach ($usernames as $username) {
             $user = $_ENV['user']->get_user_by_username($username);
             $uid = $user['uid'];
-            $this->db->query("REPLACE INTO " . UC_DBTABLEPRE . "protectedmembers SET uid='$uid', username='$username', appid='$appid', dateline='{$this->time}', admin='$admin'", 'SILENT');
+            $this->db->execute("REPLACE INTO " . UC_DBTABLEPRE . "protectedmembers SET uid='$uid', username='$username', appid='$appid', dateline='{$this->time}', admin='$admin'", 'SILENT');
         }
         return $this->db->errno() ? - 1 : 1;
     }
@@ -254,7 +254,7 @@ class UserControl extends Control
         $appid = $this->app['appid'];
         $usernames = (array) $username;
         foreach ($usernames as $username) {
-            $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "protectedmembers WHERE username='$username' AND appid='$appid'");
+            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "protectedmembers WHERE username='$username' AND appid='$appid'");
         }
         return $this->db->errno() ? - 1 : 1;
     }
@@ -271,7 +271,7 @@ class UserControl extends Control
             return $status;
         }
         $uid = $_ENV['user']->add_user($newusername, $password, $email, $uid);
-        $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "mergemembers WHERE appid='" . $this->app['appid'] . "' AND username='$oldusername'");
+        $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "mergemembers WHERE appid='" . $this->app['appid'] . "' AND username='$oldusername'");
         return $uid;
     }
 
@@ -279,7 +279,7 @@ class UserControl extends Control
     {
         $this->init_input();
         $username = $this->input('username');
-        $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "mergemembers WHERE appid='" . $this->app['appid'] . "' AND username='$username'");
+        $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "mergemembers WHERE appid='" . $this->app['appid'] . "' AND username='$username'");
         return NULL;
     }
 

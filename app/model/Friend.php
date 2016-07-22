@@ -19,15 +19,15 @@ class Friend
     {
         $direction = $this->db->result_first("SELECT direction FROM " . UC_DBTABLEPRE . "friends WHERE uid='$friendid' AND friendid='$uid' LIMIT 1");
         if ($direction == 1) {
-            $this->db->query("INSERT INTO " . UC_DBTABLEPRE . "friends SET uid='$uid', friendid='$friendid', comment='$comment', direction='3'", 'SILENT');
-            $this->db->query("UPDATE " . UC_DBTABLEPRE . "friends SET direction='3' WHERE uid='$friendid' AND friendid='$uid'");
+            $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "friends SET uid='$uid', friendid='$friendid', comment='$comment', direction='3'", 'SILENT');
+            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "friends SET direction='3' WHERE uid='$friendid' AND friendid='$uid'");
             return 1;
         } elseif ($direction == 2) {
             return 1;
         } elseif ($direction == 3) {
             return - 1;
         } else {
-            $this->db->query("INSERT INTO " . UC_DBTABLEPRE . "friends SET uid='$uid', friendid='$friendid', comment='$comment', direction='1'", 'SILENT');
+            $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "friends SET uid='$uid', friendid='$friendid', comment='$comment', direction='1'", 'SILENT');
             return $this->db->insert_id();
         }
     }
@@ -35,10 +35,10 @@ class Friend
     function delete($uid, $friendids)
     {
         $friendids = $this->base->implode($friendids);
-        $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "friends WHERE uid='$uid' AND friendid IN ($friendids)");
+        $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "friends WHERE uid='$uid' AND friendid IN ($friendids)");
         $affectedrows = $this->db->affected_rows();
         if ($affectedrows > 0) {
-            $this->db->query("UPDATE " . UC_DBTABLEPRE . "friends SET direction=1 WHERE uid IN ($friendids) AND friendid='$uid' AND direction='3'");
+            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "friends SET direction=1 WHERE uid IN ($friendids) AND friendid='$uid' AND direction='3'");
         }
         return $affectedrows;
     }

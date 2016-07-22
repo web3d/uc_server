@@ -39,7 +39,7 @@ class FeedControl extends Control
         $hash_template = md5($title_template . $body_template);
         $hash_data = md5($title_template . $title_data . $body_template . $body_data);
         $dateline = $this->time;
-        $this->db->query("INSERT INTO " . UC_DBTABLEPRE . "feeds SET appid='$appid', icon='$icon', uid='$uid', username='$username',
+        $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "feeds SET appid='$appid', icon='$icon', uid='$uid', username='$username',
 			title_template='$title_template', title_data='$title_data', body_template='$body_template', body_data='$body_data', body_general='$body_general',
 			image_1='$image_1', image_1_link='$image_1_link', image_2='$image_2', image_2_link='$image_2_link',
 			image_3='$image_3', image_3_link='$image_3_link', image_4='$image_4', image_4_link='$image_4_link',
@@ -52,7 +52,7 @@ class FeedControl extends Control
         $start = $this->input('start');
         $limit = $this->input('limit');
         $end = $start + $limit;
-        $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "feeds WHERE feedid>'$start' AND feedid<'$end'");
+        $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "feeds WHERE feedid>'$start' AND feedid<'$end'");
     }
 
     function onget()
@@ -79,7 +79,7 @@ class FeedControl extends Control
 
     function _delete($start, $end)
     {
-        $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "feeds WHERE feedid>='$start' AND feedid<='$end'");
+        $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "feeds WHERE feedid>='$start' AND feedid<='$end'");
     }
 
     function _parsetemplate($template)

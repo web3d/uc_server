@@ -279,7 +279,7 @@ class UserControl extends Control
                 $_ENV['user']->delete_useravatar($uid);
             }
             
-            $this->db->query("UPDATE " . UC_DBTABLEPRE . "members SET $sqladd email='$email' WHERE uid='$uid'");
+            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "members SET $sqladd email='$email' WHERE uid='$uid'");
             $status = $this->db->errno() ? - 1 : 1;
         }
         $user = $this->db->fetch_first("SELECT * FROM " . UC_DBTABLEPRE . "members WHERE uid='$uid'");

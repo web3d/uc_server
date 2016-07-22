@@ -41,7 +41,7 @@ class AdminControl extends Control
                     $allowadminnote = getgpc('allowadminnote', 'P');
                     $allowadmincache = getgpc('allowadmincache', 'P');
                     $allowadminlog = getgpc('allowadminlog', 'P');
-                    $this->db->query("INSERT INTO " . UC_DBTABLEPRE . "admins SET
+                    $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "admins SET
 						uid='$uid',
 						username='$addname',
 						allowadminsetting='$allowadminsetting',
@@ -102,7 +102,7 @@ class AdminControl extends Control
         
         if (! empty($_POST['delete'])) {
             $uids = $this->implode(getgpc('delete', 'P'));
-            $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "admins WHERE uid IN ($uids)");
+            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "admins WHERE uid IN ($uids)");
         }
         
         $page = max(1, getgpc('page'));
@@ -142,7 +142,7 @@ class AdminControl extends Control
             $allowadminnote = getgpc('allowadminnote', 'P');
             $allowadmincache = getgpc('allowadmincache', 'P');
             $allowadminlog = getgpc('allowadminlog', 'P');
-            $this->db->query("UPDATE " . UC_DBTABLEPRE . "admins SET
+            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "admins SET
 				allowadminsetting='$allowadminsetting',
 				allowadminapp='$allowadminapp',
 				allowadminuser='$allowadminuser',

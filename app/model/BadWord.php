@@ -27,9 +27,9 @@ class BadWord
             $replacement = trim($replacement);
             $findpattern = $this->pattern_find($find);
             if ($type == 1) {
-                $this->db->query("REPLACE INTO " . UC_DBTABLEPRE . "badwords SET find='$find', replacement='$replacement', admin='$admin', findpattern='$findpattern'");
+                $this->db->execute("REPLACE INTO " . UC_DBTABLEPRE . "badwords SET find='$find', replacement='$replacement', admin='$admin', findpattern='$findpattern'");
             } elseif ($type == 2) {
-                $this->db->query("INSERT INTO " . UC_DBTABLEPRE . "badwords SET find='$find', replacement='$replacement', admin='$admin', findpattern='$findpattern'", 'SILENT');
+                $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "badwords SET find='$find', replacement='$replacement', admin='$admin', findpattern='$findpattern'", 'SILENT');
             }
         }
         return $this->db->insert_id();
@@ -51,19 +51,19 @@ class BadWord
     function delete_badword($arr)
     {
         $badwordids = $this->base->implode($arr);
-        $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "badwords WHERE id IN ($badwordids)");
+        $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "badwords WHERE id IN ($badwordids)");
         return $this->db->affected_rows();
     }
 
     function truncate_badword()
     {
-        $this->db->query("TRUNCATE " . UC_DBTABLEPRE . "badwords");
+        $this->db->execute("TRUNCATE " . UC_DBTABLEPRE . "badwords");
     }
 
     function update_badword($find, $replacement, $id)
     {
         $findpattern = $this->pattern_find($find);
-        $this->db->query("UPDATE " . UC_DBTABLEPRE . "badwords SET find='$find', replacement='$replacement', findpattern='$findpattern' WHERE id='$id'");
+        $this->db->execute("UPDATE " . UC_DBTABLEPRE . "badwords SET find='$find', replacement='$replacement', findpattern='$findpattern' WHERE id='$id'");
         return $this->db->affected_rows();
     }
 

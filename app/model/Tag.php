@@ -44,9 +44,9 @@ class Tag
         if (! empty($data[0])) {
             $return = $this->db->result_first("SELECT count(*) FROM " . UC_DBTABLEPRE . "tags WHERE tagname='$data[0]' AND appid='$appid'");
             if ($return) {
-                $this->db->query("UPDATE " . UC_DBTABLEPRE . "tags SET data='$datanew', expiration='" . $this->base->time . "' WHERE tagname='$data[0]' AND appid='$appid'");
+                $this->db->execute("UPDATE " . UC_DBTABLEPRE . "tags SET data='$datanew', expiration='" . $this->base->time . "' WHERE tagname='$data[0]' AND appid='$appid'");
             } else {
-                $this->db->query("INSERT INTO " . UC_DBTABLEPRE . "tags (tagname, appid, data, expiration) VALUES ('$data[0]', '$appid', '$datanew', '" . $this->base->time . "')");
+                $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "tags (tagname, appid, data, expiration) VALUES ('$data[0]', '$appid', '$datanew', '" . $this->base->time . "')");
             }
         }
     }
@@ -55,9 +55,9 @@ class Tag
     {
         $return = $this->db->result_first("SELECT count(*) FROM " . UC_DBTABLEPRE . "tags WHERE tagname='$tagname' AND appid='$appid'");
         if ($return) {
-            $this->db->query("UPDATE " . UC_DBTABLEPRE . "tags SET expiration='0' WHERE tagname='$tagname' AND appid='$appid'");
+            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "tags SET expiration='0' WHERE tagname='$tagname' AND appid='$appid'");
         } else {
-            $this->db->query("INSERT INTO " . UC_DBTABLEPRE . "tags (tagname, appid, expiration) VALUES ('$tagname', '$appid', '0')");
+            $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "tags (tagname, appid, expiration) VALUES ('$tagname', '$appid', '0')");
         }
     }
 }

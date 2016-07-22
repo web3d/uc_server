@@ -50,16 +50,16 @@ class App
     function delete_apps($appids)
     {
         $appids = $this->base->implode($appids);
-        $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "applications WHERE appid IN ($appids)");
+        $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "applications WHERE appid IN ($appids)");
         return $this->db->affected_rows();
     }
 
     function alter_app_table($appid, $operation = 'ADD')
     {
         if ($operation == 'ADD') {
-            $this->db->query("ALTER TABLE " . UC_DBTABLEPRE . "notelist ADD COLUMN app$appid tinyint NOT NULL", 'SILENT');
+            $this->db->execute("ALTER TABLE " . UC_DBTABLEPRE . "notelist ADD COLUMN app$appid tinyint NOT NULL", 'SILENT');
         } else {
-            $this->db->query("ALTER TABLE " . UC_DBTABLEPRE . "notelist DROP COLUMN app$appid", 'SILENT');
+            $this->db->execute("ALTER TABLE " . UC_DBTABLEPRE . "notelist DROP COLUMN app$appid", 'SILENT');
         }
     }
 

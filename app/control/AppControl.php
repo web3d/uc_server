@@ -50,7 +50,7 @@ class AppControl extends Control
             if (empty($app)) {
                 $authkey = $this->_generate_key();
                 $apptagtemplates = $this->serialize($apptagtemplates, 1);
-                $this->db->query("INSERT INTO " . UC_DBTABLEPRE . "applications SET
+                $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "applications SET
 					name='$appname',
 					url='$appurl',
 					ip='$appip',

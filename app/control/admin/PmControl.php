@@ -101,7 +101,7 @@ class PmControl extends Control
             foreach ($pmids as $pmid) {
                 $query = $this->db->query("SELECT * FROM " . UC_DBTABLEPRE . "pm_indexes i LEFT JOIN " . UC_DBTABLEPRE . "pm_lists l ON i.plid=l.plid WHERE i.pmid='$pmid'");
                 if ($index = $this->db->fetch_array($query)) {
-                    $this->db->query("DELETE FROM " . UC_DBTABLEPRE . $_ENV['pm']->getposttablename($index['plid']) . " WHERE pmid='$pmid'");
+                    $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . $_ENV['pm']->getposttablename($index['plid']) . " WHERE pmid='$pmid'");
                     if ($index['pmtype'] == 1) {
                         $authorcount = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . $_ENV['pm']->getposttablename($index['plid']) . " WHERE plid='" . $index['plid'] . "' AND delstatus IN (0, 2)");
                         $othercount = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . $_ENV['pm']->getposttablename($index['plid']) . " WHERE plid='" . $index['plid'] . "' AND delstatus IN (0, 1)");
@@ -112,29 +112,29 @@ class PmControl extends Control
                             $other = $users[0];
                         }
                         if ($authorcount + $othercount == 0) {
-                            $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='" . $index['plid'] . "'");
-                            $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "pm_lists WHERE plid='" . $index['plid'] . "'");
-                            $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "pm_indexes WHERE plid='" . $index['plid'] . "'");
+                            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='" . $index['plid'] . "'");
+                            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_lists WHERE plid='" . $index['plid'] . "'");
+                            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_indexes WHERE plid='" . $index['plid'] . "'");
                         } else {
                             if ($authorcount) {
-                                $this->db->query("UPDATE " . UC_DBTABLEPRE . "pm_members SET pmnum='$authorcount' WHERE plid='" . $index['plid'] . "' AND uid='" . $index['authorid'] . "'");
+                                $this->db->execute("UPDATE " . UC_DBTABLEPRE . "pm_members SET pmnum='$authorcount' WHERE plid='" . $index['plid'] . "' AND uid='" . $index['authorid'] . "'");
                             } else {
-                                $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='" . $index['plid'] . "' AND uid='" . $index['authorid'] . "'");
+                                $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='" . $index['plid'] . "' AND uid='" . $index['authorid'] . "'");
                             }
                             if ($othercount) {
-                                $this->db->query("UPDATE " . UC_DBTABLEPRE . "pm_members SET pmnum='$othercount' WHERE plid='" . $index['plid'] . "' AND uid='" . $other . "'");
+                                $this->db->execute("UPDATE " . UC_DBTABLEPRE . "pm_members SET pmnum='$othercount' WHERE plid='" . $index['plid'] . "' AND uid='" . $other . "'");
                             } else {
-                                $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='" . $index['plid'] . "' AND uid='" . $other . "'");
+                                $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='" . $index['plid'] . "' AND uid='" . $other . "'");
                             }
                         }
                     } elseif ($index['pmtype'] == 2) {
                         $count = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . $_ENV['pm']->getposttablename($index['plid']) . " WHERE plid='" . $index['plid'] . "'");
                         if (! $count) {
-                            $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='" . $index['plid'] . "'");
-                            $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "pm_lists WHERE plid='" . $index['plid'] . "'");
-                            $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "pm_indexes WHERE plid='" . $index['plid'] . "'");
+                            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='" . $index['plid'] . "'");
+                            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_lists WHERE plid='" . $index['plid'] . "'");
+                            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_indexes WHERE plid='" . $index['plid'] . "'");
                         } else {
-                            $this->db->query("UPDATE " . UC_DBTABLEPRE . "pm_members SET pmnum='$count' WHERE plid='" . $index['plid'] . "'");
+                            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "pm_members SET pmnum='$count' WHERE plid='" . $index['plid'] . "'");
                         }
                     }
                 }
@@ -168,26 +168,26 @@ class PmControl extends Control
                     while ($member = $this->db->fetch_array($query)) {
                         $processed = 1;
                         if ($member['pmtype'] == 1) {
-                            $this->db->query("DELETE FROM " . UC_DBTABLEPRE . $_ENV['pm']->getposttablename($member['plid']) . " WHERE plid='" . $member['plid'] . "'");
-                            $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "pm_lists WHERE plid='" . $member['plid'] . "'");
-                            $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='" . $member['plid'] . "'");
+                            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . $_ENV['pm']->getposttablename($member['plid']) . " WHERE plid='" . $member['plid'] . "'");
+                            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_lists WHERE plid='" . $member['plid'] . "'");
+                            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='" . $member['plid'] . "'");
                             $adjust = $this->db->affected_rows();
-                            $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "pm_indexes WHERE plid='" . $member['plid'] . "'");
+                            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_indexes WHERE plid='" . $member['plid'] . "'");
                         } elseif ($member['pmtype'] == 2) {
                             if ($member['authorid'] == $member['uid']) {
-                                $this->db->query("DELETE FROM " . UC_DBTABLEPRE . $_ENV['pm']->getposttablename($member['plid']) . " WHERE plid='" . $member['plid'] . "'");
-                                $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "pm_lists WHERE plid='" . $member['plid'] . "'");
-                                $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='" . $member['plid'] . "'");
+                                $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . $_ENV['pm']->getposttablename($member['plid']) . " WHERE plid='" . $member['plid'] . "'");
+                                $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_lists WHERE plid='" . $member['plid'] . "'");
+                                $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='" . $member['plid'] . "'");
                                 $adjust = $this->db->affected_rows();
-                                $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "pm_indexes WHERE plid='" . $member['plid'] . "'");
+                                $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_indexes WHERE plid='" . $member['plid'] . "'");
                             } else {
-                                $this->db->query("DELETE FROM " . UC_DBTABLEPRE . $_ENV['pm']->getposttablename($member['plid']) . " WHERE plid='" . $member['plid'] . "' AND authorid IN (" . $uids . ")");
+                                $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . $_ENV['pm']->getposttablename($member['plid']) . " WHERE plid='" . $member['plid'] . "' AND authorid IN (" . $uids . ")");
                                 $affectpmnum = $this->db->affected_rows();
-                                $this->db->query("DELETE FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='" . $member['plid'] . "' AND uid IN (" . $uids . ")");
+                                $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='" . $member['plid'] . "' AND uid IN (" . $uids . ")");
                                 $affectmembers = $this->db->affected_rows();
                                 $adjust = $affectmembers;
-                                $this->db->query("UPDATE " . UC_DBTABLEPRE . "pm_members SET pmnum=pmnum-'$affectpmnum' WHERE plid='" . $member['plid'] . "'");
-                                $this->db->query("UPDATE " . UC_DBTABLEPRE . "pm_lists SET members=members-'$affectmembers' WHERE plid='" . $member['plid'] . "'");
+                                $this->db->execute("UPDATE " . UC_DBTABLEPRE . "pm_members SET pmnum=pmnum-'$affectpmnum' WHERE plid='" . $member['plid'] . "'");
+                                $this->db->execute("UPDATE " . UC_DBTABLEPRE . "pm_lists SET members=members-'$affectmembers' WHERE plid='" . $member['plid'] . "'");
                             }
                         }
                     }
