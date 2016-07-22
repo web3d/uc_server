@@ -198,14 +198,6 @@ class CreditControl extends Control
 
     function sync_unserialize($s, $release_root)
     {
-        if (! function_exists('xml_unserialize')) {
-            if ($release_root && file_exists(UC_ROOT . $release_root . './lib/xml.class.php')) {
-                include UC_ROOT . $release_root . './lib/xml.class.php';
-            } else {
-                include UC_ROOT . './lib/xml.class.php';
-            }
-        }
-        
         return xml_unserialize($s);
     }
 }

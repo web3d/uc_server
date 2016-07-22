@@ -178,7 +178,6 @@ class Note
 
     function sendone($appid, $noteid = 0, $note = '')
     {
-        require_once UC_ROOT . './lib/xml.class.php';
         $return = FALSE;
         $app = $this->apps[$appid];
         if ($noteid) {

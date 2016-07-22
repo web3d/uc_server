@@ -95,7 +95,6 @@ class DbControl extends Control
 
     function onoperate()
     {
-        require_once UC_ROOT . 'lib/xml.class.php';
         $nexturl = getgpc('nexturl');
         $appid = intval(getgpc('appid'));
         $type = getgpc('t') == 'import' ? 'import' : 'export';

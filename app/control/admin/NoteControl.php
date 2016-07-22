@@ -77,7 +77,6 @@ class NoteControl extends Control
                 'action=updatecredit'
             )
         );
-        $this->check_priv();
     }
 
     function onls()
