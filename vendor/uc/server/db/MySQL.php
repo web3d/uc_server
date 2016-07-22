@@ -2,41 +2,15 @@
 
 namespace uc\server\db;
 
-class MySQL implements DbInterface
+class MySQL extends Base
 {
-
-    var $querynum = 0;
-
-    var $link;
-
-    var $histories;
-
-    var $dbhost;
-
-    var $dbuser;
-
-    var $dbpw;
-
-    var $dbcharset;
-
-    var $pconnect;
-
-    var $tablepre;
-
-    var $time;
-
-    var $goneaway = 5;
-
-    function connect($dbhost, $dbuser, $dbpw, $dbname = '', $dbcharset = '', $pconnect = 0, $tablepre = '', $time = 0)
+    /**
+     * 
+     * @inheritdoc
+     */
+    public function connect($dbhost, $dbuser, $dbpw, $dbname = '', $dbcharset = '', $pconnect = 0, $tablepre = '', $time = 0)
     {
-        $this->dbhost = $dbhost;
-        $this->dbuser = $dbuser;
-        $this->dbpw = $dbpw;
-        $this->dbname = $dbname;
-        $this->dbcharset = $dbcharset;
-        $this->pconnect = $pconnect;
-        $this->tablepre = $tablepre;
-        $this->time = $time;
+        parent::connect($dbhost, $dbuser, $dbpw, $dbname, $dbcharset, $pconnect, $tablepre, $time);
         
         if ($pconnect) {
             if (! $this->link = mysql_pconnect($dbhost, $dbuser, $dbpw)) {
@@ -92,11 +66,12 @@ class MySQL implements DbInterface
 
     function cache_gc()
     {
-        $this->query("DELETE FROM {$this->tablepre}sqlcaches WHERE expiry<$this->time");
+        $this->query("DELETE FROM {{%sqlcaches}} WHERE expiry<$this->time");
     }
 
     function query($sql, $type = '', $cachetime = FALSE)
     {
+        $sql = $this->replaceRawTableName($sql);
         $func = $type == 'UNBUFFERED' && @function_exists('mysql_unbuffered_query') ? 'mysql_unbuffered_query' : 'mysql_query';
         if (! ($query = $func($sql, $this->link)) && $type != 'SILENT') {
             $this->halt('MySQL Query Error', $sql);

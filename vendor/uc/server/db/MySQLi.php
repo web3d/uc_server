@@ -2,74 +2,8 @@
 
 namespace uc\server\db;
 
-class MySQLi implements DbInterface
+class MySQLi extends Base
 {
-
-    /**
-     *
-     * @var int 查询次数
-     */
-    public $querynum = 0;
-
-    /**
-     *
-     * @var \mysqli db底层连接对象
-     */
-    protected $link;
-
-    /**
-     *
-     * @var array sql查询历史语句
-     */
-    public $histories;
-
-    /**
-     *
-     * @var string db host名 含端口 
-     */
-    protected $dbhost;
-
-    /**
-     *
-     * @var string db 用户名
-     */
-    protected $dbuser;
-
-    /**
-     *
-     * @var string db 用户名密码
-     */
-    protected $dbpw;
-
-    /**
-     *
-     * @var string db 连接使用的字符串
-     */
-    protected $dbcharset;
-
-    /**
-     *
-     * @var bool 是否持久连接
-     */
-    protected $pconnect;
-
-    /**
-     *
-     * @var string 表名前缀
-     */
-    protected $tablepre;
-
-    /**
-     *
-     * @var int sql缓存时长 
-     */
-    protected $time;
-
-    /**
-     *
-     * @var int 连接丢失的时间
-     */
-    protected $goneaway = 5;
 
     /**
      * db连接
@@ -84,14 +18,7 @@ class MySQLi implements DbInterface
      */
     public function connect($dbhost, $dbuser, $dbpw, $dbname = '', $dbcharset = '', $pconnect = 0, $tablepre = '', $time = 0)
     {
-        $this->dbhost = $dbhost;
-        $this->dbuser = $dbuser;
-        $this->dbpw = $dbpw;
-        $this->dbname = $dbname;
-        $this->dbcharset = $dbcharset;
-        $this->pconnect = $pconnect;
-        $this->tablepre = $tablepre;
-        $this->time = $time;
+        parent::connect($dbhost, $dbuser, $dbpw, $dbname, $dbcharset, $pconnect, $tablepre, $time);
         
         if (! $this->link = new \mysqli($dbhost, $dbuser, $dbpw, $dbname)) {
             $this->halt('Can not connect to MySQL server');
@@ -159,7 +86,7 @@ class MySQLi implements DbInterface
 
     protected function cache_gc()
     {
-        $this->query("DELETE FROM {$this->tablepre}sqlcaches WHERE expiry < {$this->time}");
+        $this->query("DELETE FROM {{%sqlcaches}} WHERE expiry < {$this->time}");
     }
 
     /**
@@ -171,7 +98,9 @@ class MySQLi implements DbInterface
      */
     public function query($sql, $type = '', $cachetime = FALSE)
     {
+        $sql = $this->replaceRawTableName($sql);
         $resultmode = $type == 'UNBUFFERED' ? MYSQLI_USE_RESULT : MYSQLI_STORE_RESULT;
+        
         if (! ($query = $this->link->query($sql, $resultmode)) && $type != 'SILENT') {
             $this->halt('MySQL Query Error', $sql);
         }
