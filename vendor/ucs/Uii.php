@@ -4,8 +4,6 @@
  *
  */
 
-require(__DIR__ . '/BaseUii.php');
-
 /**
  * Gets the application start timestamp.
  */
@@ -40,6 +38,8 @@ defined('YII_ENV_TEST') or define('YII_ENV_TEST', YII_ENV === 'test');
  * This constant defines whether error handling should be enabled. Defaults to true.
  */
 defined('YII_ENABLE_ERROR_HANDLER') or define('YII_ENABLE_ERROR_HANDLER', true);
+
+require(__DIR__ . '/BaseUii.php');
 
 /**
  * Yii is a helper class serving common framework functionalities.

@@ -5,7 +5,7 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yii;
+namespace ucs;
 
 use ucs\base\InvalidConfigException;
 use ucs\base\InvalidParamException;
