@@ -107,21 +107,21 @@ class FrameControl extends Control
     private function _get_uc_members()
     {
         if (! $this->members) {
-            $this->members = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . "members");
+            $this->members = $this->db->result_first("SELECT COUNT(*) FROM {{%members}}");
         }
         return $this->members;
     }
 
     private function _get_uc_friends()
     {
-        $friends = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . "friends");
+        $friends = $this->db->result_first("SELECT COUNT(*) FROM {{%friends}}");
         return $friends;
     }
 
     private function _get_uc_apps()
     {
         if (! $this->apps) {
-            $this->apps = $this->db->fetch_all("SELECT * FROM " . UC_DBTABLEPRE . "applications");
+            $this->apps = $this->db->fetch_all("SELECT * FROM {{%applications}}");
         }
         return $this->apps;
     }
@@ -130,20 +130,20 @@ class FrameControl extends Control
     {
         $pms = 0;
         for ($i = 0; $i < 10; $i ++) {
-            $pms += $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . "pm_messages_" . (string) $i);
+            $pms += $this->db->result_first("SELECT COUNT(*) FROM {{%pm_messages_" . (string) $i . '}}');
         }
         return $pms;
     }
 
     private function _get_uc_notes()
     {
-        $notes = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . "notelist WHERE closed='0'");
+        $notes = $this->db->result_first("SELECT COUNT(*) FROM {{%notelist}} WHERE closed='0'");
         return $notes;
     }
 
     private function _get_uc_errornotes($applist)
     {
-        $notelist = $this->db->fetch_all("SELECT * FROM " . UC_DBTABLEPRE . "notelist ORDER BY dateline DESC LIMIT 20");
+        $notelist = $this->db->fetch_all("SELECT * FROM {{%notelist}} ORDER BY dateline DESC LIMIT 20");
         $error = array();
         foreach ($notelist as $note) {
             foreach ($applist as $k => $app) {
