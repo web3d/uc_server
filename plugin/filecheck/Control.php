@@ -7,7 +7,7 @@ use uc\server\app\control\admin\PluginControl;
 class Control extends PluginControl
 {
 
-    var $md5data = array();
+    protected $md5data = array();
 
     public function __construct()
     {
@@ -16,7 +16,7 @@ class Control extends PluginControl
 
     function onindex()
     {
-        if (! $ucfiles = @file(UC_APPDIR . '/control/admin/ucfiles.md5')) {
+        if (! $ucfiles = file(UC_APPDIR . '/control/admin/ucfiles.md5')) {
             $this->message('file_check_failed');
         }
         
@@ -41,22 +41,22 @@ class Control extends PluginControl
         }
         
         $weekbefore = $timestamp - 604800;
-        $addlist = @array_diff_assoc($this->md5data, $md5datanew);
-        $dellist = @array_diff_assoc($md5datanew, $this->md5data);
-        $modifylist = @array_diff_assoc($modifylist, $dellist);
-        $showlist = @array_merge($this->md5data, $md5datanew);
+        $addlist = array_diff_assoc($this->md5data, $md5datanew);
+        $dellist = array_diff_assoc($md5datanew, $this->md5data);
+        $modifylist = array_diff_assoc($modifylist, $dellist);
+        $showlist = array_merge($this->md5data, $md5datanew);
         $doubt = 0;
         $dirlist = $dirlog = array();
         foreach ($showlist as $file => $md5) {
             $dir = dirname($file);
-            if (@array_key_exists($file, $modifylist)) {
+            if (array_key_exists($file, $modifylist)) {
                 $fileststus = 'modify';
-            } elseif (@array_key_exists($file, $dellist)) {
+            } elseif (array_key_exists($file, $dellist)) {
                 $fileststus = 'del';
-            } elseif (@array_key_exists($file, $addlist)) {
+            } elseif (array_key_exists($file, $addlist)) {
                 $fileststus = 'add';
             } else {
-                $filemtime = @filemtime($file);
+                $filemtime = filemtime($file);
                 if ($filemtime > $weekbefore) {
                     $fileststus = 'doubt';
                     $doubt ++;
@@ -65,7 +65,7 @@ class Control extends PluginControl
                 }
             }
             if (file_exists($file)) {
-                $filemtime = @filemtime($file);
+                $filemtime = filemtime($file);
                 $fileststus && $dirlist[$fileststus][$dir][basename($file)] = array(
                     number_format(filesize($file)) . ' Bytes',
                     $this->date($filemtime)
@@ -107,11 +107,11 @@ class Control extends PluginControl
 
     function checkfiles($currentdir, $ext = '', $sub = 1, $skip = '')
     {
-        $dir = @opendir(UC_ROOT . $currentdir);
+        $dir = opendir(UC_ROOT . $currentdir);
         $exts = '/(' . $ext . ')$/i';
         $skips = explode(',', $skip);
         
-        while ($entry = @readdir($dir)) {
+        while ($entry = readdir($dir)) {
             $file = $currentdir . $entry;
             if ($entry != '.' && $entry != '..' && (preg_match($exts, $entry) || $sub && is_dir($file)) && ! in_array($entry, $skips)) {
                 if ($sub && is_dir($file)) {
