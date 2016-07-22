@@ -48,8 +48,7 @@ class PmControl extends Control
                 );
             } else {
                 $lastpm = $_ENV['pm']->lastpm($uid);
-                require_once UC_ROOT . 'lib/uccode.class.php';
-                $this->uccode = new uccode();
+                $this->uccode = new \uc\server\UCCode();
                 $lastpm['lastsummary'] = $this->uccode->complie($lastpm['lastsummary']);
                 return array(
                     'newpm' => $newpm,
@@ -292,8 +291,7 @@ class PmControl extends Control
             $pms = $_ENV['pm']->getpmbyplid($this->user['uid'], $plid, $starttime, $endtime, $start, $ppp, $type);
         }
         
-        require_once UC_ROOT . 'lib/uccode.class.php';
-        $this->uccode = new uccode();
+        $this->uccode = new \uc\server\UCCode();
         if ($pms) {
             foreach ($pms as $key => $pm) {
                 $pms[$key]['message'] = $this->uccode->complie($pms[$key]['message']);
@@ -326,8 +324,7 @@ class PmControl extends Control
         $type = 0;
         $pms = $_ENV['pm']->getpmbypmid($this->user['uid'], $pmid);
         
-        require_once UC_ROOT . 'lib/uccode.class.php';
-        $this->uccode = new uccode();
+        $this->uccode = new \uc\server\UCCode();
         if ($pms) {
             foreach ($pms as $key => $pm) {
                 $pms[$key]['message'] = $this->uccode->complie($pms[$key]['message']);

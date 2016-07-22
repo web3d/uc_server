@@ -163,8 +163,7 @@ class Pm_clientControl extends Control
                 $seccodehidden = urldecode(getgpc('seccodehidden', 'P'));
                 $seccode = strtoupper(getgpc('seccode', 'P'));
                 $seccodehidden = $this->authcode($seccodehidden, 'DECODE', $authkey);
-                require UC_ROOT . './lib/seccode.class.php';
-                if (! seccode::seccode_check($seccodehidden, $seccode)) {
+                if (! \uc\server\SecCode::seccode_check($seccodehidden, $seccode)) {
                     $this->message('pm_send_seccode_error', 'BACK', 1);
                 }
             }
@@ -344,8 +343,7 @@ class Pm_clientControl extends Control
             $subject = $pms[0]['subject'];
         }
         
-        require_once UC_ROOT . 'lib/uccode.class.php';
-        $this->uccode = new uccode();
+        $this->uccode = new \uc\server\UCCode();
         foreach ($pms as $key => $pm) {
             $pms[$key]['message'] = $this->uccode->complie($pms[$key]['message']);
             $pms[$key]['dateline'] = $this->date($pms[$key]['dateline']);

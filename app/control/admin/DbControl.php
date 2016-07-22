@@ -146,7 +146,6 @@ class DbControl extends Control
 
     function ondelete()
     {
-        require_once UC_ROOT . 'lib/xml.class.php';
         $appid = intval(getgpc('appid'));
         $backupdir = getgpc('backupdir');
         $app = $this->cache['apps'][$appid];

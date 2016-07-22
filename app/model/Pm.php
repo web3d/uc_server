@@ -853,8 +853,7 @@ class Pm
     {
         static $uccode = null;
         if ($uccode === null) {
-            require_once UC_ROOT . 'lib/uccode.class.php';
-            $uccode = new uccode();
+            $uccode = new \uc\server\UCCode();
         }
         $str = $uccode->complie($str);
         return trim($this->base->cutstr(strip_tags($str), $length));
