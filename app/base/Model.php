@@ -7,7 +7,7 @@ class Model
     
     /**
      *
-     * @var \uc\server\db\DBInterface db引擎对象
+     * @var \uc\server\Db db引擎对象
      */
     protected $db;
 
