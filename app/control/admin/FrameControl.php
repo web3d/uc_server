@@ -7,27 +7,29 @@ use uc\server\app\base\BackendControl as Control;
 class FrameControl extends Control
 {
 
-    var $members;
+    protected $members;
 
-    var $apps;
+    protected $apps;
 
-    var $friends;
+    protected $friends;
 
-    function __construct()
+    public function __construct()
     {
         parent::__construct();
     }
 
-    function onindex()
+    public function onindex()
     {
         $this->view->assign('sid', $this->view->sid);
         $mainurl = getgpc('mainurl');
-        $mainurl = ! empty($mainurl) && preg_match("/^admin\.php\?(&*\w+=\w+)*$/i", $mainurl) ? $mainurl : 'admin.php?m=frame&a=main&sid=' . $this->view->sid;
+        $mainurl = ! empty($mainurl) && preg_match("/^admin\.php\?(&*\w+=\w+)*$/i", $mainurl) 
+                ? $mainurl 
+                : 'admin.php?m=frame&a=main&sid=' . $this->view->sid;
         $this->view->assign('mainurl', $mainurl);
         $this->view->display('admin_frame_index');
     }
 
-    function onmain()
+    public function onmain()
     {
         $ucinfo = '<sc' . 'ript language="Jav' . 'aScript" src="ht' . 'tp:/' . '/cus' . 'tome' . 'r.disc' . 'uz.n' . 'et/ucn' . 'ews' . '.p' . 'hp?' . $this->_get_uc_info() . '"></s' . 'cri' . 'pt>';
         $this->view->assign('ucinfo', $ucinfo);
@@ -71,15 +73,15 @@ class FrameControl extends Control
         $this->view->display('admin_frame_main');
     }
 
-    function onmenu()
+    public function onmenu()
     {
+        $this->view->assign('plugins', $this->fetch_plugins());
         $this->view->display('admin_frame_menu');
     }
 
-    function onheader()
+    public function onheader()
     {
-        $this->load('app');
-        $applist = $_ENV['app']->get_apps();
+        $applist = $this->load('app')->get_apps();
         $cparray = array(
             'UCHOME' => 'admincp.php',
             'DISCUZ' => 'admincp.php',
@@ -102,7 +104,7 @@ class FrameControl extends Control
         $this->view->display('admin_frame_header');
     }
 
-    function _get_uc_members()
+    private function _get_uc_members()
     {
         if (! $this->members) {
             $this->members = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . "members");
@@ -110,13 +112,13 @@ class FrameControl extends Control
         return $this->members;
     }
 
-    function _get_uc_friends()
+    private function _get_uc_friends()
     {
         $friends = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . "friends");
         return $friends;
     }
 
-    function _get_uc_apps()
+    private function _get_uc_apps()
     {
         if (! $this->apps) {
             $this->apps = $this->db->fetch_all("SELECT * FROM " . UC_DBTABLEPRE . "applications");
@@ -124,7 +126,7 @@ class FrameControl extends Control
         return $this->apps;
     }
 
-    function _get_uc_pms()
+    private function _get_uc_pms()
     {
         $pms = 0;
         for ($i = 0; $i < 10; $i ++) {
@@ -133,13 +135,13 @@ class FrameControl extends Control
         return $pms;
     }
 
-    function _get_uc_notes()
+    private function _get_uc_notes()
     {
         $notes = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . "notelist WHERE closed='0'");
         return $notes;
     }
 
-    function _get_uc_errornotes($applist)
+    private function _get_uc_errornotes($applist)
     {
         $notelist = $this->db->fetch_all("SELECT * FROM " . UC_DBTABLEPRE . "notelist ORDER BY dateline DESC LIMIT 20");
         $error = array();
@@ -154,7 +156,7 @@ class FrameControl extends Control
         return $error;
     }
 
-    function _sizecount($filesize)
+    private function _sizecount($filesize)
     {
         if ($filesize >= 1073741824) {
             $filesize = round($filesize / 1073741824 * 100) / 100 . ' GB';
@@ -168,7 +170,7 @@ class FrameControl extends Control
         return $filesize;
     }
 
-    function _get_uc_info()
+    private function _get_uc_info()
     {
         $update = array(
             'uniqueid' => UC_SITEID,

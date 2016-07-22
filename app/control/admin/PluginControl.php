@@ -56,6 +56,7 @@ class PluginControl extends Control
         $do = empty($do) ? 'onindex' : 'on' . $do;
         if (method_exists($pc, $do)) {
             $pc->$do();
+            return true;
         }
 
         exit('Plugin module not found');

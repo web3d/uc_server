@@ -37,7 +37,12 @@ a{ color:#2366A8; text-decoration:none; }
 		<!--{if $user['allowadmindb'] || $user['isfounder']}--><li><a href="admin.php?m=db&a=ls" target="main">{lang menu_db}</a></li><!--{/if}-->
 		<!--{if $user['isfounder']}--><li><a href="admin.php?m=feed&a=ls" target="main">{lang menu_data_list}</a></li><!--{/if}-->
 		<!--{if $user['allowadmincache'] || $user['isfounder']}--><li><a href="admin.php?m=cache&a=update" target="main">{lang menu_update_cache}</a></li><!--{/if}-->
-		<!--{if $user['isfounder']}--><li><a href="admin.php?m=plugin&a=filecheck" target="main">{lang plugin}</a></li><!--{/if}-->
+		
+                <!--{if $user['isfounder']}-->
+                <!--{loop $plugins $pid $plugin}-->
+                <li><a href="admin.php?m=plugin&a={$pid}" target="main">{$plugin['name']}</a></li>
+                <!--{/loop}-->
+                <!--{/if}-->
 	</ul>
 </div>
 <div class="footer">Powered by UCenter {UC_SERVER_VERSION}<br />&copy; 2001 - 2011 <a href="http://www.comsenz.com/" target="_blank">Comsenz</a> Inc.</div>

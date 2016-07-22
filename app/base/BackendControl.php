@@ -101,13 +101,17 @@ class BackendControl extends Control
     protected function fetch_plugins()
     {
         $plugindir = UC_ROOT . './plugin';
+        
         $d = opendir($plugindir);
+        $plugins = [];
         while ($f = readdir($d)) {
             if ($f != '.' && $f != '..' && is_dir($plugindir . '/' . $f)) {
-                $pluginxml = $plugindir . $f . '/plugin.xml';
-                $plugins[] = xml_unserialize($pluginxml);
+                $pluginxml = file_get_contents("$plugindir/$f/plugin.xml");
+                $plugins[$f] = xml_unserialize($pluginxml);
             }
         }
+        
+        return $plugins;
     }
 
     public function _call($a, $arg)
