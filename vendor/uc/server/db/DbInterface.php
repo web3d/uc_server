@@ -18,6 +18,15 @@ interface DbInterface
     public function connect($dbhost, $dbuser, $dbpw, $dbname = '', $dbcharset = '', $pconnect = 0, $tablepre = '', $time = 0);
     
     /**
+     * 根据sql构造查询对象
+     * @param string $sql
+     * @param string $type
+     * @param int $cachetime
+     * @return mixed
+     */
+    public function query($sql, $type = '', $cachetime = FALSE);
+    
+    /**
      * 返回第一条的第一个字段的值
      * @param string $sql
      * @return mixed

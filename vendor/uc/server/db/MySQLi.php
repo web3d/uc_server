@@ -94,7 +94,7 @@ class MySQLi extends Base
      * @param string $sql
      * @param string $type
      * @param int $cachetime
-     * @return \mysqli_result
+     * @return mixed
      */
     public function query($sql, $type = '', $cachetime = FALSE)
     {
