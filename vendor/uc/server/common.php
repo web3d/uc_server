@@ -362,3 +362,31 @@ function uc_gmdate($time, $type = 3, $formatDate = 'Y-n-j', $formatTime = 'H:i',
     $format[1] = ($type & 1) ? (! empty($formatTime) ? $formatTime : 'H:i') : '';
     return gmdate(implode(' ', $format), $time + $offset);
 }
+
+/**
+ * 日志写入
+ * @param string $msg
+ * @param string $filename
+ */
+function uc_writelog($msg, $filename)
+{
+    $logfile = UC_ROOT . './data/logs/' . $filename . '.php';
+    if (is_file($logfile) && filesize($logfile) > 2048000) {
+        PHP_VERSION < '4.2.0' && mt_srand((double) microtime() * 1000000);
+        $hash = '';
+        $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz';
+        for ($i = 0; $i < 4; $i ++) {
+            $hash .= $chars[mt_rand(0, 61)];
+        }
+        rename($logfile, UC_ROOT . './data/logs/' . $filename . '_' . $hash . '.php');
+    }
+    if ($fp = fopen($logfile, 'a')) {
+        flock($fp, 2);
+        fwrite($fp, "<?PHP exit;?>\t" . str_replace(array(
+            '<?',
+            '?>',
+            '<?php'
+        ), '', $msg) . "\n");
+        fclose($fp);
+    }
+}

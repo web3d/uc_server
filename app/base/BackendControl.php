@@ -4,83 +4,101 @@ namespace uc\server\app\base;
 
 class BackendControl extends Control
 {
+    /**
+     *
+     * @var array 用户信息 
+     */
+    public $user = [
+        'uid' => 0,
+        'username' => '',
+        'admin' => false,
+        'isfounder' => false,
+        'allowadminsetting' => false,
+        'allowadminapp' => false,
+        'allowadminuser' => false,
+        'allowadminpm' => false,
+        'allowadmincredits' => false,
+        'allowadminbadword' => false,
+        'allowadmindomain' => false,
+        'allowadmindb' => false,
+        'allowadmincache' => false,
+        'allowadminnote' => false,
+    ];
 
-    var $cookie_status = 0;
+    protected $cookie_status = 1;
 
-    function __construct()
+    public function __construct()
     {
         parent::__construct();
-        $this->cookie_status = 0;
-        $sid = $this->cookie_status ? getgpc('sid', 'C') : rawurlencode(getgpc('sid', 'R'));
-        $this->sid = $this->view->sid = $this->sid_decode($sid) ? $sid : '';
-        $this->view->assign('sid', $this->view->sid);
-        $this->view->assign('iframe', getgpc('iframe'));
+        
+        $this->sid = $this->cookie_status ? getgpc('sid', 'C') : rawurlencode(getgpc('sid', 'R'));
+        
         $a = getgpc('a');
         if (! (getgpc('m') == 'user' && ($a == 'login' || $a == 'logout'))) {
             $this->check_priv();
         }
+        
+        $this->view->sid = $this->sid;
+        if ($this->cookie_status) {
+            $this->setcookie('sid', $this->sid, 86400);
+        }
+        
+        $this->view->assign('user', $this->user);
+        $this->view->assign('iframe', getgpc('iframe'));
     }
 
-    function check_priv()
+    /**
+     * 对当前用户的管理权限进行初始化
+     */
+    protected function check_priv()
     {
-        $username = $this->sid_decode($this->view->sid);
-        if (empty($username)) {
-            header('Location: ' . UC_API . '/admin.php?m=user&a=login&iframe=' . getgpc('iframe', 'G') . ($this->cookie_status ? '' : '&sid=' . $this->view->sid));
-            exit();
-        } else {
-            $this->user['isfounder'] = $username == 'UCenterAdministrator' ? 1 : 0;
-            if (! $this->user['isfounder']) {
-                $admin = $this->db->fetch_first("SELECT a.*, m.* FROM " . UC_DBTABLEPRE . "admins a LEFT JOIN " . UC_DBTABLEPRE . "members m USING(uid) WHERE a.username='$username'");
-                if (empty($admin)) {
-                    header('Location: ' . UC_API . '/admin.php?m=user&a=login&iframe=' . getgpc('iframe', 'G') . ($this->cookie_status ? '' : '&sid=' . $this->view->sid));
-                    exit();
-                } else {
-                    $this->user = $admin;
-                    $this->user['username'] = $username;
-                    $this->user['admin'] = 1;
-                    $this->view->sid = $this->sid_encode($username);
-                    $this->setcookie('sid', $this->view->sid, 86400);
-                }
-            } else {
-                $this->user['username'] = 'UCenterAdministrator';
-                $this->user['admin'] = 1;
-                $this->view->sid = $this->sid_encode($this->user['username']);
-                $this->setcookie('sid', $this->view->sid, 86400);
+        $this->user['username'] = $this->sid_decode($this->sid);
+        if (empty($this->user['username'])) {
+            $this->jumpToLoginPage();
+        }
+        
+        $this->user['admin'] = true;
+        $this->user['isfounder'] = $this->is_founder($this->user['username']);
+        if (! $this->user['isfounder']) {
+            $admin = $this->db->fetch_first("SELECT a.*, m.* FROM " 
+                    . UC_DBTABLEPRE . "admins a LEFT JOIN " 
+                    . UC_DBTABLEPRE . "members m USING(uid) " 
+                    . "WHERE a.username='{$this->user['username']}'");
+            if (empty($admin)) {
+                $this->jumpToLoginPage();
             }
-            $this->view->assign('user', $this->user);
+            
+            $this->user = array_merge($this->user, $admin);
         }
     }
 
-    function is_founder($username)
+    /**
+     * 判断指定用户是否是创始者
+     * @param string $username
+     * @return bool
+     */
+    protected function is_founder($username)
     {
-        return $this->user['isfounder'];
+        return $username == 'UCenterAdministrator' ? true : false;
     }
-
-    function writelog($action, $extra = '')
+    
+    protected function jumpToLoginPage()
     {
-        $log = dhtmlspecialchars($this->user['username'] . "\t" . $this->onlineip . "\t" . $this->time . "\t$action\t$extra");
-        $logfile = UC_ROOT . './data/logs/' . gmdate('Ym', $this->time) . '.php';
-        if (@filesize($logfile) > 2048000) {
-            PHP_VERSION < '4.2.0' && mt_srand((double) microtime() * 1000000);
-            $hash = '';
-            $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz';
-            for ($i = 0; $i < 4; $i ++) {
-                $hash .= $chars[mt_rand(0, 61)];
-            }
-            @rename($logfile, UC_ROOT . './data/logs/' . gmdate('Ym', $this->time) . '_' . $hash . '.php');
-        }
-        if ($fp = @fopen($logfile, 'a')) {
-            @flock($fp, 2);
-            @fwrite($fp, "<?PHP exit;?>\t" . str_replace(array(
-                '<?',
-                '?>',
-                '<?php'
-            ), '', $log) . "\n");
-            @fclose($fp);
-        }
+        header('Location: ' . UC_API . '/admin.php?m=user&a=login&iframe=' 
+                . getgpc('iframe', 'G') 
+                . ($this->cookie_status ? '' : '&sid=' . $this->sid)
+        );
+        exit();
     }
 
-    function fetch_plugins()
+    protected function writelog($action, $extra = '')
+    {
+        $log = dhtmlspecialchars($this->user['username'] . "\t" 
+                . $this->onlineip . "\t" . $this->time . "\t$action\t$extra");
+        uc_writelog($log, gmdate('Ym', $this->time));
+    }
+
+    protected function fetch_plugins()
     {
         $plugindir = UC_ROOT . './plugin';
         $d = opendir($plugindir);
@@ -92,7 +110,7 @@ class BackendControl extends Control
         }
     }
 
-    function _call($a, $arg)
+    public function _call($a, $arg)
     {
         if (method_exists($this, $a) && $a{0} != '_') {
             $this->$a();
@@ -101,7 +119,12 @@ class BackendControl extends Control
         }
     }
 
-    function sid_encode($username)
+    /**
+     * 将username编码为sid
+     * @param string $username
+     * @return string
+     */
+    protected function sid_encode($username)
     {
         $ip = $this->onlineip;
         $agent = $_SERVER['HTTP_USER_AGENT'];
@@ -110,7 +133,12 @@ class BackendControl extends Control
         return rawurlencode($this->authcode("$username\t$check", 'ENCODE', $authkey, 1800));
     }
 
-    function sid_decode($sid)
+    /**
+     * 将sid解码为username
+     * @param type $sid
+     * @return string|boolean false代表解码失败
+     */
+    protected function sid_decode($sid)
     {
         $ip = $this->onlineip;
         $agent = $_SERVER['HTTP_USER_AGENT'];

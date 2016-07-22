@@ -5,6 +5,10 @@ namespace uc\server\app\base;
 class Control
 {
 
+    /**
+     *
+     * @var string 当前用户标识,encode过的
+     */
     public $sid;
 
     public $time;
@@ -23,18 +27,13 @@ class Control
      */
     protected $view;
 
+    /**
+     *
+     * @var array 用户信息 
+     */
     public $user = [
-        'allowadminsetting' => false,
-        'isfounder' => false,
-        'allowadminapp' => false,
-        'allowadminuser' => false,
-        'allowadminpm' => false,
-        'allowadmincredits' => false,
-        'allowadminbadword' => false,
-        'allowadmindomain' => false,
-        'allowadmindb' => false,
-        'allowadmincache' => false,
-        'allowadminnote' => false,
+        'uid' => 0,
+        'username' => '',
     ];
 
     public $settings = array();
@@ -231,7 +230,7 @@ class Control
         return getgpc('formhash', 'P') == FORMHASH ? true : false;
     }
 
-    protected function date($time, $type = 3)
+    public function date($time, $type = 3)
     {
         return uc_gmdate($time, $type, $this->settings['dateformat'], $this->settings['timeformat'], $this->settings['timeoffset']);
     }
@@ -277,7 +276,7 @@ class Control
         return $dir1 . '/' . $dir2 . '/' . $dir3 . '/' . substr($uid, - 2) . $typeadd . "_avatar_$size.jpg";
     }
 
-    protected function &cache($cachefile)
+    public function cache($cachefile)
     {
         static $_CACHE = array();
         if (! isset($_CACHE[$cachefile])) {
