@@ -2,72 +2,60 @@
 
 namespace uc\server\app\model;
 
-class BadWord
+use uc\server\app\base\Model;
+
+class BadWord extends Model
 {
-
-    var $db;
-
-    var $base;
-
-    function __construct(&$base)
-    {
-        $this->badwordmodel($base);
-    }
-
-    function badwordmodel(&$base)
-    {
-        $this->base = $base;
-        $this->db = $base->db;
-    }
-
-    function add_badword($find, $replacement, $admin, $type = 1)
+    protected $tableName = '{{%badwords}}';
+    
+    public function add_badword($find, $replacement, $admin, $type = 1)
     {
         if ($find) {
             $find = trim($find);
             $replacement = trim($replacement);
             $findpattern = $this->pattern_find($find);
             if ($type == 1) {
-                $this->db->execute("REPLACE INTO " . UC_DBTABLEPRE . "badwords SET find='$find', replacement='$replacement', admin='$admin', findpattern='$findpattern'");
+                $this->db->execute("REPLACE INTO {{%badwords}} SET find='$find', replacement='$replacement', admin='$admin', findpattern='$findpattern'");
             } elseif ($type == 2) {
-                $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "badwords SET find='$find', replacement='$replacement', admin='$admin', findpattern='$findpattern'", 'SILENT');
+                $this->db->execute("INSERT INTO {{%badwords}} SET find='$find', replacement='$replacement', admin='$admin', findpattern='$findpattern'", 'SILENT');
             }
         }
         return $this->db->insert_id();
     }
 
-    function get_total_num()
+    public function get_total_num()
     {
-        $data = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . "badwords");
+        $data = $this->db->result_first("SELECT COUNT(*) FROM {{%badwords}}");
         return $data;
     }
 
-    function get_list($page, $ppp, $totalnum)
+    public function get_list($page, $ppp, $totalnum)
     {
         $start = $this->base->page_get_start($page, $ppp, $totalnum);
-        $data = $this->db->fetch_all("SELECT * FROM " . UC_DBTABLEPRE . "badwords LIMIT $start, $ppp");
+        $data = $this->db->fetch_all("SELECT * FROM {{%badwords}} LIMIT $start, $ppp");
         return $data;
     }
 
-    function delete_badword($arr)
+    public function delete_badword($arr)
     {
         $badwordids = $this->base->implode($arr);
-        $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "badwords WHERE id IN ($badwordids)");
+        $this->db->execute("DELETE FROM {{%badwords}} WHERE id IN ($badwordids)");
         return $this->db->affected_rows();
     }
 
-    function truncate_badword()
+    public function truncate_badword()
     {
-        $this->db->execute("TRUNCATE " . UC_DBTABLEPRE . "badwords");
+        $this->db->execute("TRUNCATE {{%badwords}}");
     }
 
-    function update_badword($find, $replacement, $id)
+    public function update_badword($find, $replacement, $id)
     {
         $findpattern = $this->pattern_find($find);
-        $this->db->execute("UPDATE " . UC_DBTABLEPRE . "badwords SET find='$find', replacement='$replacement', findpattern='$findpattern' WHERE id='$id'");
+        $this->db->execute("UPDATE {{%badwords}} SET find='$find', replacement='$replacement', findpattern='$findpattern' WHERE id='$id'");
         return $this->db->affected_rows();
     }
 
-    function pattern_find($find)
+    private function pattern_find($find)
     {
         $find = preg_quote($find, "/'");
         $find = str_replace("\\", "\\\\", $find);

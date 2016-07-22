@@ -2,33 +2,23 @@
 
 namespace uc\server\app\model;
 
-class Feed
+use uc\server\app\base\Model;
+
+class Feed extends Model
 {
 
-    var $db;
-
-    var $base;
-
-    var $apps;
-
-    var $operations = array();
-
-    function __construct(&$base)
-    {
-        $this->base = $base;
-        $this->db = $base->db;
-    }
+    protected $tableName = '{{%feeds}}';
 
     function get_total_num()
     {
-        $data = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . "feeds");
+        $data = $this->db->result_first("SELECT COUNT(*) FROM {{%feeds}}");
         return $data;
     }
 
     function get_list($page, $ppp, $totalnum)
     {
         $start = $this->base->page_get_start($page, $ppp, $totalnum);
-        $data = $this->db->fetch_all("SELECT * FROM " . UC_DBTABLEPRE . "feeds LIMIT $start, $ppp");
+        $data = $this->db->fetch_all("SELECT * FROM {{%feeds}} LIMIT $start, $ppp");
         
         foreach ((array) $data as $k => $v) {
             $searchs = $replaces = array();

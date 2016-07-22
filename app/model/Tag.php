@@ -2,32 +2,26 @@
 
 namespace uc\server\app\model;
 
-class Tag
+use uc\server\app\base\Model;
+
+class Tag extends Model
 {
 
-    var $db;
+    protected $tableName = '{{%tags}}';
 
-    var $base;
-
-    function __construct(&$base)
+    public function get_tag_by_name($tagname)
     {
-        $this->base = $base;
-        $this->db = $base->db;
-    }
-
-    function get_tag_by_name($tagname)
-    {
-        $arr = $this->db->fetch_all("SELECT * FROM " . UC_DBTABLEPRE . "tags WHERE tagname='$tagname'");
+        $arr = $this->db->fetch_all("SELECT * FROM {{%tags}} WHERE tagname='$tagname'");
         return $arr;
     }
 
-    function get_template($appid)
+    public function get_template($appid)
     {
-        $result = $this->db->result_first("SELECT tagtemplates FROM " . UC_DBTABLEPRE . "applications WHERE appid='$appid'");
+        $result = $this->db->result_first("SELECT tagtemplates FROM {{%applications}} WHERE appid='$appid'");
         return $result;
     }
 
-    function updatedata($appid, $data)
+    public function updatedata($appid, $data)
     {
         $appid = intval($appid);
         $data = xml_unserialize($data);
@@ -42,22 +36,22 @@ class Tag
         $tmp = $_ENV['app']->get_apps('type', "appid='$appid'");
         $datanew = addslashes($tmp[0]['type'] . "\t" . implode("\t", $datanew));
         if (! empty($data[0])) {
-            $return = $this->db->result_first("SELECT count(*) FROM " . UC_DBTABLEPRE . "tags WHERE tagname='$data[0]' AND appid='$appid'");
+            $return = $this->db->result_first("SELECT count(*) FROM {{%tags}} WHERE tagname='$data[0]' AND appid='$appid'");
             if ($return) {
-                $this->db->execute("UPDATE " . UC_DBTABLEPRE . "tags SET data='$datanew', expiration='" . $this->base->time . "' WHERE tagname='$data[0]' AND appid='$appid'");
+                $this->db->execute("UPDATE {{%tags}} SET data='$datanew', expiration='" . $this->base->time . "' WHERE tagname='$data[0]' AND appid='$appid'");
             } else {
-                $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "tags (tagname, appid, data, expiration) VALUES ('$data[0]', '$appid', '$datanew', '" . $this->base->time . "')");
+                $this->db->execute("INSERT INTO {{%tags}} (tagname, appid, data, expiration) VALUES ('$data[0]', '$appid', '$datanew', '" . $this->base->time . "')");
             }
         }
     }
 
-    function formatcache($appid, $tagname)
+    public function formatcache($appid, $tagname)
     {
-        $return = $this->db->result_first("SELECT count(*) FROM " . UC_DBTABLEPRE . "tags WHERE tagname='$tagname' AND appid='$appid'");
+        $return = $this->db->result_first("SELECT count(*) FROM {{%tags}} WHERE tagname='$tagname' AND appid='$appid'");
         if ($return) {
-            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "tags SET expiration='0' WHERE tagname='$tagname' AND appid='$appid'");
+            $this->db->execute("UPDATE {{%tags}} SET expiration='0' WHERE tagname='$tagname' AND appid='$appid'");
         } else {
-            $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "tags (tagname, appid, expiration) VALUES ('$tagname', '$appid', '0')");
+            $this->db->execute("INSERT INTO {{%tags}} (tagname, appid, expiration) VALUES ('$tagname', '$appid', '0')");
         }
     }
 }

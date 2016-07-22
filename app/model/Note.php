@@ -2,29 +2,28 @@
 
 namespace uc\server\app\model;
 
+use uc\server\app\base\Model;
+
 define('UC_NOTE_REPEAT', 2);
 define('UC_NOTE_TIMEOUT', 15);
 define('UC_NOTE_GC', 5);
 
 define('API_RETURN_FAILED', '-1');
 
-class Note
+class Note extends Model
 {
+    protected $tableName = '{{%notelist}}';
 
-    var $db;
+    protected $apps;
 
-    var $base;
+    protected $operations = array();
 
-    var $apps;
+    protected $notetype = 'HTTP';
 
-    var $operations = array();
-
-    var $notetype = 'HTTP';
-
-    function __construct(&$base)
+    public function __construct(&$base)
     {
-        $this->base = $base;
-        $this->db = $base->db;
+        parent::__construct($base);
+        
         $this->apps = $this->base->cache('apps');
         $this->operations = array(
             'test' => array(
@@ -88,18 +87,18 @@ class Note
         );
     }
 
-    function get_total_num($all = TRUE)
+    public function get_total_num($all = TRUE)
     {
         $closedadd = $all ? '' : ' WHERE closed=\'0\'';
-        $data = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . "notelist $closedadd");
+        $data = $this->db->result_first("SELECT COUNT(*) FROM {{%notelist}} $closedadd");
         return $data;
     }
 
-    function get_list($page, $ppp, $totalnum, $all = TRUE)
+    public function get_list($page, $ppp, $totalnum, $all = TRUE)
     {
         $start = $this->base->page_get_start($page, $ppp, $totalnum);
         $closedadd = $all ? '' : ' WHERE closed=\'0\'';
-        $data = $this->db->fetch_all("SELECT * FROM " . UC_DBTABLEPRE . "notelist $closedadd ORDER BY dateline DESC LIMIT $start, $ppp");
+        $data = $this->db->fetch_all("SELECT * FROM {{%notelist}} $closedadd ORDER BY dateline DESC LIMIT $start, $ppp");
         foreach ((array) $data as $k => $v) {
             $data[$k]['postdata2'] = addslashes(str_replace('"', '', $data[$k]['postdata']));
             $data[$k]['getdata2'] = addslashes(str_replace('"', '', $v['getdata']));
@@ -108,14 +107,14 @@ class Note
         return $data;
     }
 
-    function delete_note($ids)
+    public function delete_note($ids)
     {
         $ids = $this->base->implode($ids);
-        $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "notelist WHERE noteid IN ($ids)");
+        $this->db->execute("DELETE FROM {{%notelist}} WHERE noteid IN ($ids)");
         return $this->db->affected_rows();
     }
 
-    function add($operation, $getdata = '', $postdata = '', $appids = array(), $pri = 0)
+    public function add($operation, $getdata = '', $postdata = '', $appids = array(), $pri = 0)
     {
         $extra = $varextra = '';
         foreach ((array) $this->apps as $appid => $app) {
@@ -138,13 +137,13 @@ class Note
         }
         $getdata = addslashes($getdata);
         $postdata = addslashes($postdata);
-        $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "notelist SET getdata='$getdata', operation='$operation', pri='$pri', postdata='$postdata'$extra");
+        $this->db->execute("INSERT INTO {{%notelist}} SET getdata='$getdata', operation='$operation', pri='$pri', postdata='$postdata'$extra");
         $insert_id = $this->db->insert_id();
-        $insert_id && $this->db->execute("REPLACE INTO " . UC_DBTABLEPRE . "vars (name, value) VALUES ('noteexists', '1')$varextra");
+        $insert_id && $this->db->execute("REPLACE INTO {{%vars}} (name, value) VALUES ('noteexists', '1')$varextra");
         return $insert_id;
     }
 
-    function send()
+    public function send()
     {
         register_shutdown_function(array(
             $this,
@@ -152,11 +151,11 @@ class Note
         ));
     }
 
-    function _send()
+    private function _send()
     {
         $note = $this->_get_note();
         if (empty($note)) {
-            $this->db->execute("REPLACE INTO " . UC_DBTABLEPRE . "vars SET name='noteexists', value='0'");
+            $this->db->execute("REPLACE INTO {{%vars}} SET name='noteexists', value='0'");
             return NULL;
         }
         
@@ -170,13 +169,13 @@ class Note
             }
         }
         if ($closenote) {
-            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "notelist SET closed='1' WHERE noteid='$note[noteid]'");
+            $this->db->execute("UPDATE {{%notelist}} SET closed='1' WHERE noteid='$note[noteid]'");
         }
         
         $this->_gc();
     }
 
-    function sendone($appid, $noteid = 0, $note = '')
+    public function sendone($appid, $noteid = 0, $note = '')
     {
         $return = FALSE;
         $app = $this->apps[$appid];
@@ -216,27 +215,27 @@ class Note
                 $func = $this->operations[$note['operation']][3];
                 $_ENV[$this->operations[$note['operation']][2]]->$func($appid, $response);
             }
-            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "notelist SET app$appid='1', totalnum=totalnum+1, succeednum=succeednum+1, dateline='{$this->base->time}' $closedsqladd WHERE noteid='$note[noteid]'", 'SILENT');
+            $this->db->execute("UPDATE {{%notelist}} SET app$appid='1', totalnum=totalnum+1, succeednum=succeednum+1, dateline='{$this->base->time}' $closedsqladd WHERE noteid='$note[noteid]'", 'SILENT');
             $return = TRUE;
         } else {
-            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "notelist SET app$appid = app$appid-'1', totalnum=totalnum+1, dateline='{$this->base->time}' $closedsqladd WHERE noteid='$note[noteid]'", 'SILENT');
+            $this->db->execute("UPDATE {{%notelist}} SET app$appid = app$appid-'1', totalnum=totalnum+1, dateline='{$this->base->time}' $closedsqladd WHERE noteid='$note[noteid]'", 'SILENT');
             $return = FALSE;
         }
         return $return;
     }
 
-    function _get_note()
+    private function _get_note()
     {
-        $data = $this->db->fetch_first("SELECT * FROM " . UC_DBTABLEPRE . "notelist WHERE closed='0' ORDER BY pri DESC, noteid ASC LIMIT 1");
+        $data = $this->db->fetch_first("SELECT * FROM {{%notelist}} WHERE closed='0' ORDER BY pri DESC, noteid ASC LIMIT 1");
         return $data;
     }
 
-    function _gc()
+    private function _gc()
     {
-        rand(0, UC_NOTE_GC) == 0 && $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "notelist WHERE closed='1'");
+        rand(0, UC_NOTE_GC) == 0 && $this->db->execute("DELETE FROM {{%notelist}} WHERE closed='1'");
     }
 
-    function _close_note($note, $apps, $returnsucceed, $appid)
+    private function _close_note($note, $apps, $returnsucceed, $appid)
     {
         $note['app' . $appid] = $returnsucceed ? 1 : $note['app' . $appid] - 1;
         $appcount = count($apps);
@@ -251,13 +250,13 @@ class Note
         }
     }
 
-    function _get_note_by_id($noteid)
+    private function _get_note_by_id($noteid)
     {
-        $data = $this->db->fetch_first("SELECT * FROM " . UC_DBTABLEPRE . "notelist WHERE noteid='$noteid'");
+        $data = $this->db->fetch_first("SELECT * FROM {{%notelist}} WHERE noteid='$noteid'");
         return $data;
     }
 
-    function get_url_code($operation, $getdata, $appid)
+    public function get_url_code($operation, $getdata, $appid)
     {
         $app = $this->apps[$appid];
         $authkey = $app['authkey'];

@@ -2,36 +2,28 @@
 
 namespace uc\server\app\model;
 
-class Cache
+use uc\server\app\base\Model;
+
+class Cache extends Model
 {
 
-    var $db;
+    protected $tableName = '';
+    protected $map = array(
+        'settings' => array(
+            'settings'
+        ),
+        'badwords' => array(
+            'badwords'
+        ),
+        'plugins' => array(
+            'plugins'
+        ),
+        'apps' => array(
+            'apps'
+        )
+    );
 
-    var $base;
-
-    var $map;
-
-    function __construct(&$base)
-    {
-        $this->base = $base;
-        $this->db = $base->db;
-        $this->map = array(
-            'settings' => array(
-                'settings'
-            ),
-            'badwords' => array(
-                'badwords'
-            ),
-            'plugins' => array(
-                'plugins'
-            ),
-            'apps' => array(
-                'apps'
-            )
-        );
-    }
-
-    function updatedata($cachefile = '')
+    public function updatedata($cachefile = '')
     {
         if ($cachefile) {
             foreach ((array) $this->map[$cachefile] as $modules) {
@@ -56,7 +48,7 @@ class Cache
         }
     }
 
-    function updatetpl()
+    public function updatetpl()
     {
         $tpl = dir(UC_DATADIR . 'view');
         while ($entry = $tpl->read()) {
@@ -67,9 +59,9 @@ class Cache
         $tpl->close();
     }
 
-    function _get_badwords()
+    private function _get_badwords()
     {
-        $data = $this->db->fetch_all("SELECT * FROM " . UC_DBTABLEPRE . "badwords");
+        $data = $this->db->fetch_all("SELECT * FROM {{%badwords}}");
         $return = array();
         if (is_array($data)) {
             foreach ($data as $k => $v) {
@@ -80,7 +72,7 @@ class Cache
         return $return;
     }
 
-    function _get_apps()
+    private function _get_apps()
     {
         $this->base->load('app');
         $apps = $_ENV['app']->get_apps();
@@ -93,14 +85,15 @@ class Cache
         return $apps2;
     }
 
-    function _get_settings()
+    private function _get_settings()
     {
         return $this->base->get_setting();
     }
 
-    function _get_plugins()
+    private function _get_plugins()
     {
         $this->base->load('plugin');
         return $_ENV['plugin']->get_plugins();
     }
+
 }

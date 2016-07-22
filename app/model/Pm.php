@@ -2,6 +2,8 @@
 
 namespace uc\server\app\model;
 
+use uc\server\app\base\Model;
+
 define('PMINBALCKLIST_ERROR', - 6);
 define('PMSENDSELF_ERROR', - 8);
 define('PMSENDNONE_ERROR', - 9);
@@ -12,44 +14,36 @@ define('PMCHATTYPE_ERROR', - 13);
 define('PMUIDTYPE_ERROR', - 14);
 define('PMDATA_ERROR', - 15);
 
-class Pm
+class Pm extends Model
 {
 
-    var $db;
+    protected $tableName = '{{%pm_lists}}';
 
-    var $base;
-
-    function __construct(&$base)
+    private function pmintval($pmid)
     {
-        $this->base = $base;
-        $this->db = $base->db;
+        return is_numeric($pmid) ? $pmid : 0;
     }
 
-    function pmintval($pmid)
-    {
-        return @is_numeric($pmid) ? $pmid : 0;
-    }
-
-    function getpmbypmid($uid, $pmid)
+    public function getpmbypmid($uid, $pmid)
     {
         if (! $pmid) {
             return array();
         }
         $arr = array();
-        $pm = $this->db->fetch_first("SELECT * FROM " . UC_DBTABLEPRE . "pm_indexes i LEFT JOIN " . UC_DBTABLEPRE . "pm_lists t ON t.plid=i.plid WHERE i.pmid='$pmid'");
+        $pm = $this->db->fetch_first("SELECT * FROM {{%pm_indexes}} i LEFT JOIN {{%pm_lists}} t ON t.plid=i.plid WHERE i.pmid='$pmid'");
         if ($this->isprivilege($pm['plid'], $uid)) {
-            $pms = $this->db->fetch_all("SELECT t.*, p.*, t.authorid as founderuid, t.dateline as founddateline FROM " . UC_DBTABLEPRE . $this->getposttablename($pm['plid']) . " p LEFT JOIN " . UC_DBTABLEPRE . "pm_lists t ON t.plid=p.plid WHERE p.pmid='$pm[pmid]'");
+            $pms = $this->db->fetch_all("SELECT t.*, p.*, t.authorid as founderuid, t.dateline as founddateline FROM {{%" . $this->getposttablename($pm['plid']) . "}} p LEFT JOIN {{%pm_lists}} t ON t.plid=p.plid WHERE p.pmid='$pm[pmid]'");
             $arr = $this->getpostlist($pms);
         }
         return $arr;
     }
 
-    function isprivilege($plid, $uid)
+    public function isprivilege($plid, $uid)
     {
         if (! $plid || ! $uid) {
             return true;
         }
-        $query = $this->db->query("SELECT * FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='$plid' AND uid='$uid'");
+        $query = $this->db->query("SELECT * FROM {{%pm_members}} WHERE plid='$plid' AND uid='$uid'");
         if ($this->db->fetch_array($query)) {
             return true;
         } else {
@@ -57,7 +51,7 @@ class Pm
         }
     }
 
-    function getpmbyplid($uid, $plid, $starttime, $endtime, $start, $ppp, $type = 0)
+    public function getpmbyplid($uid, $plid, $starttime, $endtime, $start, $ppp, $type = 0)
     {
         if (! $type) {
             $pm = $this->getprivatepmbyplid($uid, $plid, $starttime, $endtime, $start, $ppp);
@@ -67,7 +61,7 @@ class Pm
         return $this->getpostlist($pm);
     }
 
-    function getpostlist($list)
+    public function getpostlist($list)
     {
         if (empty($list)) {
             return array();
@@ -105,7 +99,7 @@ class Pm
         return $list;
     }
 
-    function setpmstatus($uid, $touids, $plids, $status = 0)
+    public function setpmstatus($uid, $touids, $plids, $status = 0)
     {
         if (! $uid) {
             return false;
@@ -125,33 +119,33 @@ class Pm
                 $relastionship[] = $this->relationship($uid, $value);
             }
             $plid = $plidpostarr = array();
-            $query = $this->db->query("SELECT plid FROM " . UC_DBTABLEPRE . "pm_lists WHERE min_max IN (" . $this->base->implode($relationship) . ")");
+            $query = $this->db->query("SELECT plid FROM {{%pm_lists}} WHERE min_max IN (" . $this->base->implode($relastionship) . ")");
             while ($thread = $this->db->fetch_array($query)) {
                 $plidarr[] = $thread['plid'];
             }
             if ($plidarr) {
-                $this->db->execute("UPDATE " . UC_DBTABLEPRE . "pm_members SET isnew='$newstatus' WHERE plid IN (" . $this->base->implode($plidarr) . ") AND uid='$uid' AND isnew='$oldstatus'");
+                $this->db->execute("UPDATE {{%pm_members}} SET isnew='$newstatus' WHERE plid IN (" . $this->base->implode($plidarr) . ") AND uid='$uid' AND isnew='$oldstatus'");
             }
         }
         if ($plids) {
-            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "pm_members SET isnew='$newstatus' WHERE plid IN (" . $this->base->implode($plids) . ") AND uid='$uid' AND isnew='$oldstatus'");
+            $this->db->execute("UPDATE {{%pm_members}} SET isnew='$newstatus' WHERE plid IN (" . $this->base->implode($plids) . ") AND uid='$uid' AND isnew='$oldstatus'");
         }
         return true;
     }
 
-    function set_ignore($uid)
+    public function set_ignore($uid)
     {
-        return $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "newpm WHERE uid='$uid'");
+        return $this->db->execute("DELETE FROM {{%newpm}} WHERE uid='$uid'");
     }
 
-    function isnewpm($uid)
+    public function isnewpm($uid)
     {
-        return $this->db->result_first("SELECT uid FROM " . UC_DBTABLEPRE . "newpm WHERE uid='$uid'");
+        return $this->db->result_first("SELECT uid FROM {{%newpm}} WHERE uid='$uid'");
     }
 
-    function lastpm($uid)
+    public function lastpm($uid)
     {
-        $lastpm = $this->db->fetch_first("SELECT * FROM " . UC_DBTABLEPRE . "pm_members m LEFT JOIN " . UC_DBTABLEPRE . "pm_lists t ON m.plid=t.plid WHERE m.uid='$uid' ORDER BY m.lastdateline DESC LIMIT 1");
+        $lastpm = $this->db->fetch_first("SELECT * FROM {{%pm_members}} m LEFT JOIN {{%pm_lists t ON m.plid=t.plid WHERE m.uid='$uid' ORDER BY m.lastdateline DESC LIMIT 1");
         $lastmessage = unserialize($lastpm['lastmessage']);
         if ($lastmessage['lastauthorid']) {
             $lastpm['lastauthorid'] = $lastmessage['lastauthorid'];
@@ -165,7 +159,7 @@ class Pm
         return $lastpm;
     }
 
-    function getpmnum($uid, $type = 0, $isnew = 0)
+    public function getpmnum($uid, $type = 0, $isnew = 0)
     {
         $newsql = '';
         $newnum = 0;
@@ -174,19 +168,19 @@ class Pm
             $newsql = 'AND m.isnew=1';
         }
         if (! $type) {
-            $newnum = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . "pm_members m WHERE m.uid='$uid' $newsql");
+            $newnum = $this->db->result_first("SELECT COUNT(*) FROM {{%pm_members}} m WHERE m.uid='$uid' $newsql");
         } else {
-            $newnum = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . "pm_members m LEFT JOIN " . UC_DBTABLEPRE . "pm_lists t ON t.plid=m.plid WHERE m.uid='$uid' $newsql AND t.pmtype='$type'");
+            $newnum = $this->db->result_first("SELECT COUNT(*) FROM {{%pm_members}} m LEFT JOIN {{%pm_lists}} t ON t.plid=m.plid WHERE m.uid='$uid' $newsql AND t.pmtype='$type'");
         }
         return $newnum;
     }
 
-    function getpmnumbyplid($uid, $plid)
+    public function getpmnumbyplid($uid, $plid)
     {
-        return $this->db->result_first("SELECT pmnum FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='$plid' AND uid='$uid'");
+        return $this->db->result_first("SELECT pmnum FROM {{%pm_members}} WHERE plid='$plid' AND uid='$uid'");
     }
 
-    function sendpm($fromuid, $fromusername, $touids, $subject, $message, $type = 0)
+    public function sendpm($fromuid, $fromusername, $touids, $subject, $message, $type = 0)
     {
         if (! $fromuid || ! $fromusername || ! $touids || ! $message) {
             return 0;
@@ -233,7 +227,7 @@ class Pm
         $lastsummary = $this->removecode(trim(stripslashes($message)), 150);
         
         if (! $type) {
-            $query = $this->db->query("SELECT plid, min_max FROM " . UC_DBTABLEPRE . "pm_lists WHERE min_max IN (" . $this->base->implode($relationship) . ")");
+            $query = $this->db->query("SELECT plid, min_max FROM {{%pm_lists}} WHERE min_max IN (" . $this->base->implode($relationship) . ")");
             while ($thread = $this->db->fetch_array($query)) {
                 $existplid[$thread['min_max']] = $thread['plid'];
             }
@@ -245,27 +239,27 @@ class Pm
             $lastmessage = addslashes(serialize($lastmessage));
             foreach ($relationship as $key => $value) {
                 if (! isset($existplid[$value])) {
-                    $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "pm_lists(authorid, pmtype, subject, members, min_max, dateline, lastmessage) VALUES('$fromuid', '1', '$subject', 2, '$value', '" . $this->base->time . "', '$lastmessage')");
+                    $this->db->execute("INSERT INTO {{%pm_lists}} (authorid, pmtype, subject, members, min_max, dateline, lastmessage) VALUES('$fromuid', '1', '$subject', 2, '$value', '" . $this->base->time . "', '$lastmessage')");
                     $plid = $this->db->insert_id();
-                    $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "pm_indexes(plid) VALUES('$plid')");
+                    $this->db->execute("INSERT INTO {{%pm_indexes}} (plid) VALUES('$plid')");
                     $pmid = $this->db->insert_id();
-                    $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . $this->getposttablename($plid) . "(pmid, plid, authorid, message, dateline, delstatus) VALUES('$pmid', '$plid', '$fromuid', '$message', '" . $this->base->time . "', 0)");
-                    $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "pm_members(plid, uid, isnew, pmnum, lastupdate, lastdateline) VALUES('$plid', '$key', '1', '1', '0', '" . $this->base->time . "')");
-                    $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "pm_members(plid, uid, isnew, pmnum, lastupdate, lastdateline) VALUES('$plid', '$fromuid', '0', '1', '" . $this->base->time . "', '" . $this->base->time . "')");
+                    $this->db->execute("INSERT INTO {{%" . $this->getposttablename($plid) . "}} (pmid, plid, authorid, message, dateline, delstatus) VALUES('$pmid', '$plid', '$fromuid', '$message', '" . $this->base->time . "', 0)");
+                    $this->db->execute("INSERT INTO {{%pm_members}} (plid, uid, isnew, pmnum, lastupdate, lastdateline) VALUES('$plid', '$key', '1', '1', '0', '" . $this->base->time . "')");
+                    $this->db->execute("INSERT INTO {{%pm_members}}(plid, uid, isnew, pmnum, lastupdate, lastdateline) VALUES('$plid', '$fromuid', '0', '1', '" . $this->base->time . "', '" . $this->base->time . "')");
                 } else {
                     $plid = $existplid[$value];
-                    $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "pm_indexes(plid) VALUES('$plid')");
+                    $this->db->execute("INSERT INTO {{%pm_indexes}} (plid) VALUES('$plid')");
                     $pmid = $this->db->insert_id();
                     $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . $this->getposttablename($plid) . "(pmid, plid, authorid, message, dateline, delstatus) VALUES('$pmid', '$plid', '$fromuid', '$message', '" . $this->base->time . "', 0)");
-                    $result = $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "pm_members(plid, uid, isnew, pmnum, lastupdate, lastdateline) VALUES('$plid', '$key', '1', '1', '0', '" . $this->base->time . "')", 'SILENT');
+                    $result = $this->db->execute("INSERT INTO {{%pm_lists}}(plid, uid, isnew, pmnum, lastupdate, lastdateline) VALUES('$plid', '$key', '1', '1', '0', '" . $this->base->time . "')", 'SILENT');
                     if (! $result) {
-                        $this->db->execute("UPDATE " . UC_DBTABLEPRE . "pm_members SET isnew=1, pmnum=pmnum+1, lastdateline='" . $this->base->time . "' WHERE plid='$plid' AND uid='$key'");
+                        $this->db->execute("UPDATE {{%pm_members}} SET isnew=1, pmnum=pmnum+1, lastdateline='" . $this->base->time . "' WHERE plid='$plid' AND uid='$key'");
                     }
-                    $result = $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "pm_members(plid, uid, isnew, pmnum, lastupdate, lastdateline) VALUES('$plid', '$fromuid', '0', '1', '" . $this->base->time . "', '" . $this->base->time . "')", 'SILENT');
+                    $result = $this->db->execute("INSERT INTO {{%pm_members}}(plid, uid, isnew, pmnum, lastupdate, lastdateline) VALUES('$plid', '$fromuid', '0', '1', '" . $this->base->time . "', '" . $this->base->time . "')", 'SILENT');
                     if (! $result) {
-                        $this->db->execute("UPDATE " . UC_DBTABLEPRE . "pm_members SET isnew=0, pmnum=pmnum+1, lastupdate='" . $this->base->time . "', lastdateline='" . $this->base->time . "' WHERE plid='$plid' AND uid='$fromuid'");
+                        $this->db->execute("UPDATE {{%pm_members}} SET isnew=0, pmnum=pmnum+1, lastupdate='" . $this->base->time . "', lastdateline='" . $this->base->time . "' WHERE plid='$plid' AND uid='$fromuid'");
                     }
-                    $this->db->execute("UPDATE " . UC_DBTABLEPRE . "pm_lists SET lastmessage='$lastmessage' WHERE plid='$plid'");
+                    $this->db->execute("UPDATE {{%pm_lists}} SET lastmessage='$lastmessage' WHERE plid='$plid'");
                 }
             }
         } else {
@@ -275,33 +269,33 @@ class Pm
                 'firstsummary' => $lastsummary
             );
             $lastmessage = addslashes(serialize($lastmessage));
-            $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "pm_lists(authorid, pmtype, subject, members, min_max, dateline, lastmessage) VALUES('$fromuid', '2', '$subject', '" . (count($touids) + 1) . "', '', '" . $this->base->time . "', '$lastmessage')");
+            $this->db->execute("INSERT INTO {{%pm_lists}} (authorid, pmtype, subject, members, min_max, dateline, lastmessage) VALUES('$fromuid', '2', '$subject', '" . (count($touids) + 1) . "', '', '" . $this->base->time . "', '$lastmessage')");
             $plid = $this->db->insert_id();
-            $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "pm_indexes(plid) VALUES('$plid')");
+            $this->db->execute("INSERT INTO {{%pm_indexes}} (plid) VALUES('$plid')");
             $pmid = $this->db->insert_id();
-            $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . $this->getposttablename($plid) . "(pmid, plid, authorid, message, dateline, delstatus) VALUES('$pmid', '$plid', '$fromuid', '$message', '" . $this->base->time . "', 0)");
+            $this->db->execute("INSERT INTO {{%" . $this->getposttablename($plid) . "}} (pmid, plid, authorid, message, dateline, delstatus) VALUES('$pmid', '$plid', '$fromuid', '$message', '" . $this->base->time . "', 0)");
             $pm_member_insertsql[] = "('$plid', '$fromuid', '0', '1', '" . $this->base->time . "', '" . $this->base->time . "')";
             foreach ($touids as $key => $value) {
                 $pm_member_insertsql[] = "('$plid', '$value', '1', '1', '0', '" . $this->base->time . "')";
             }
-            $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "pm_members(plid, uid, isnew, pmnum, lastupdate, lastdateline) VALUES " . implode(',', $pm_member_insertsql));
+            $this->db->execute("INSERT INTO {{%pm_members}} (plid, uid, isnew, pmnum, lastupdate, lastdateline) VALUES " . implode(',', $pm_member_insertsql));
         }
         
         $newpm = array();
         foreach ($touids as $key => $value) {
             $newpm[] = "('$value')";
         }
-        $this->db->execute("REPLACE INTO " . UC_DBTABLEPRE . "newpm(uid) VALUES " . implode(',', $newpm));
+        $this->db->execute("REPLACE INTO {{%newpm}} (uid) VALUES " . implode(',', $newpm));
         return $pmid;
     }
 
-    function replypm($plid, $fromuid, $fromusername, $message)
+    public function replypm($plid, $fromuid, $fromusername, $message)
     {
         if (! $plid || ! $fromuid || ! $fromusername || ! $message) {
             return 0;
         }
         
-        $threadpm = $this->db->fetch_first("SELECT * FROM " . UC_DBTABLEPRE . "pm_lists WHERE plid='$plid'");
+        $threadpm = $this->db->fetch_first("SELECT * FROM {{%pm_lists}} WHERE plid='$plid'");
         if (empty($threadpm)) {
             return PMTHREADNONE_ERROR;
         }
@@ -328,7 +322,7 @@ class Pm
         }
         
         $memberuid = array();
-        $query = $this->db->query("SELECT * FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='$plid'");
+        $query = $this->db->query("SELECT * FROM {{%pm_members}} WHERE plid='$plid'");
         while ($member = $this->db->fetch_array($query)) {
             $memberuid[$member['uid']] = "('$member[uid]')";
         }
@@ -338,11 +332,11 @@ class Pm
         
         $_CACHE['badwords'] = $this->base->cache('badwords');
         if ($_CACHE['badwords']['findpattern']) {
-            $message = @preg_replace($_CACHE['badwords']['findpattern'], $_CACHE['badwords']['replace'], $message);
+            $message = preg_replace($_CACHE['badwords']['findpattern'], $_CACHE['badwords']['replace'], $message);
         }
         $lastsummary = $this->removecode(trim(stripslashes($message)), 150);
         
-        $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "pm_indexes(plid) VALUES('$plid')");
+        $this->db->execute("INSERT INTO {{%pm_indexes}} (plid) VALUES('$plid')");
         $pmid = $this->db->insert_id();
         $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . $this->getposttablename($plid) . "(pmid, plid, authorid, message, dateline, delstatus) VALUES('$pmid', '$plid', '$fromuid', '$message', '" . $this->base->time . "', 0)");
         if ($threadpm['pmtype'] == 1) {
@@ -352,11 +346,11 @@ class Pm
                 'lastsummary' => $lastsummary
             );
             $lastmessage = addslashes(serialize($lastmessage));
-            $result = $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "pm_members(plid, uid, isnew, pmnum, lastupdate, lastdateline) VALUES('$plid', '$touid', '1', '1', '0', '" . $this->base->time . "')", 'SILENT');
+            $result = $this->db->execute("INSERT INTO {{%pm_members}}(plid, uid, isnew, pmnum, lastupdate, lastdateline) VALUES('$plid', '$touid', '1', '1', '0', '" . $this->base->time . "')", 'SILENT');
             if (! $result) {
-                $this->db->execute("UPDATE " . UC_DBTABLEPRE . "pm_members SET isnew=1, pmnum=pmnum+1, lastdateline='" . $this->base->time . "' WHERE plid='$plid' AND uid='$touid'");
+                $this->db->execute("UPDATE {{%pm_members}} SET isnew=1, pmnum=pmnum+1, lastdateline='" . $this->base->time . "' WHERE plid='$plid' AND uid='$touid'");
             }
-            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "pm_members SET isnew=0, pmnum=pmnum+1, lastupdate='" . $this->base->time . "', lastdateline='" . $this->base->time . "' WHERE plid='$plid' AND uid='$fromuid'");
+            $this->db->execute("UPDATE {{%pm_members}} SET isnew=0, pmnum=pmnum+1, lastupdate='" . $this->base->time . "', lastdateline='" . $this->base->time . "' WHERE plid='$plid' AND uid='$fromuid'");
         } else {
             $lastmessage = unserialize($threadpm['lastmessage']);
             $lastmessage = array(
@@ -368,22 +362,22 @@ class Pm
                 'lastsummary' => $lastsummary
             );
             $lastmessage = addslashes(serialize($lastmessage));
-            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "pm_members SET isnew=1, pmnum=pmnum+1, lastdateline='" . $this->base->time . "' WHERE plid='$plid'");
-            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "pm_members SET isnew=0, lastupdate='" . $this->base->time . "' WHERE plid='$plid' AND uid='$fromuid'");
+            $this->db->execute("UPDATE {{%pm_members}} SET isnew=1, pmnum=pmnum+1, lastdateline='" . $this->base->time . "' WHERE plid='$plid'");
+            $this->db->execute("UPDATE {{%pm_members}} SET isnew=0, lastupdate='" . $this->base->time . "' WHERE plid='$plid' AND uid='$fromuid'");
         }
-        $this->db->execute("UPDATE " . UC_DBTABLEPRE . "pm_lists SET lastmessage='$lastmessage' WHERE plid='$plid'");
+        $this->db->execute("UPDATE {{%pm_lists}} SET lastmessage='$lastmessage' WHERE plid='$plid'");
         
-        $this->db->execute("REPLACE INTO " . UC_DBTABLEPRE . "newpm(uid) VALUES " . implode(',', $memberuid) . "");
+        $this->db->execute("REPLACE INTO {{%newpm}} (uid) VALUES " . implode(',', $memberuid) . "");
         
         return $pmid;
     }
 
-    function appendchatpm($plid, $uid, $touid)
+    public function appendchatpm($plid, $uid, $touid)
     {
         if (! $plid || ! $uid || ! $touid) {
             return 0;
         }
-        $threadpm = $this->db->fetch_first("SELECT * FROM " . UC_DBTABLEPRE . "pm_lists WHERE plid='$plid'");
+        $threadpm = $this->db->fetch_first("SELECT * FROM {{%pm_lists}} WHERE plid='$plid'");
         if (empty($threadpm)) {
             return PMTHREADNONE_ERROR;
         }
@@ -405,38 +399,38 @@ class Pm
         }
         
         $pmnum = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . $this->getposttablename($plid) . " WHERE plid='$plid'");
-        $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "pm_members(plid, uid, isnew, pmnum, lastupdate, lastdateline) VALUES('$plid', '$touid', '1', '$pmnum', '0', '0')", 'SILENT');
-        $num = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='$plid'");
-        $this->db->execute("UPDATE " . UC_DBTABLEPRE . "pm_lists SET members='$num' WHERE plid='$plid'");
+        $this->db->execute("INSERT INTO {{%pm_members}}(plid, uid, isnew, pmnum, lastupdate, lastdateline) VALUES('$plid', '$touid', '1', '$pmnum', '0', '0')", 'SILENT');
+        $num = $this->db->result_first("SELECT COUNT(*) FROM {{%pm_members}} WHERE plid='$plid'");
+        $this->db->execute("UPDATE {{%pm_lists}} SET members='$num' WHERE plid='$plid'");
         
         return 1;
     }
 
-    function kickchatpm($plid, $uid, $touid)
+    public function kickchatpm($plid, $uid, $touid)
     {
         if (! $uid || ! $touid || ! $plid || $uid == $touid) {
             return 0;
         }
-        $threadpm = $this->db->fetch_first("SELECT * FROM " . UC_DBTABLEPRE . "pm_lists WHERE plid='$plid'");
+        $threadpm = $this->db->fetch_first("SELECT * FROM {{%pm_lists}} WHERE plid='$plid'");
         if ($threadpm['pmtype'] != 2) {
             return PMCHATTYPE_ERROR;
         }
         if ($threadpm['authorid'] != $uid) {
             return PMPRIVILEGENONE_ERROR;
         }
-        $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='$plid' AND uid='$touid'");
-        $num = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='$plid'");
-        $this->db->execute("UPDATE " . UC_DBTABLEPRE . "pm_lists SET members='$num' WHERE plid='$plid'");
+        $this->db->execute("DELETE FROM {{%pm_members}} WHERE plid='$plid' AND uid='$touid'");
+        $num = $this->db->result_first("SELECT COUNT(*) FROM {{%pm_members}} WHERE plid='$plid'");
+        $this->db->execute("UPDATE {{%pm_lists}} SET members='$num' WHERE plid='$plid'");
         return 1;
     }
 
-    function quitchatpm($uid, $plids)
+    public function quitchatpm($uid, $plids)
     {
         if (! $uid || ! $plids) {
             return 0;
         }
         $list = array();
-        $query = $this->db->query("SELECT * FROM " . UC_DBTABLEPRE . "pm_members m LEFT JOIN " . UC_DBTABLEPRE . "pm_lists t ON m.plid=t.plid WHERE m.plid IN (" . $this->base->implode($plids) . ") AND m.uid='$uid'");
+        $query = $this->db->query("SELECT * FROM {{%pm_members}} m LEFT JOIN {{%pm_lists}} t ON m.plid=t.plid WHERE m.plid IN (" . $this->base->implode($plids) . ") AND m.uid='$uid'");
         while ($threadpm = $this->db->fetch_array($query)) {
             if ($threadpm['pmtype'] != 2) {
                 return PMCHATTYPE_ERROR;
@@ -448,19 +442,19 @@ class Pm
         }
         
         if ($list) {
-            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_members WHERE plid IN (" . $this->base->implode($list) . ") AND uid='$uid'");
-            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "pm_lists SET members=members-1 WHERE plid IN (" . $this->base->implode($list) . ")");
+            $this->db->execute("DELETE FROM {{%pm_members}} WHERE plid IN (" . $this->base->implode($list) . ") AND uid='$uid'");
+            $this->db->execute("UPDATE {{%pm_lists}} SET members=members-1 WHERE plid IN (" . $this->base->implode($list) . ")");
         }
         
         return 1;
     }
 
-    function deletepmbypmid($uid, $pmid)
+    public function deletepmbypmid($uid, $pmid)
     {
         if (! $uid || ! $pmid) {
             return 0;
         }
-        $index = $this->db->fetch_first("SELECT * FROM " . UC_DBTABLEPRE . "pm_indexes i LEFT JOIN " . UC_DBTABLEPRE . "pm_lists t ON i.plid=t.plid WHERE i.pmid='$pmid'");
+        $index = $this->db->fetch_first("SELECT * FROM {{%pm_indexes}} i LEFT JOIN {{%pm_lists}} t ON i.plid=t.plid WHERE i.pmid='$pmid'");
         if ($index['pmtype'] != 1) {
             return PMUIDTYPE_ERROR;
         }
@@ -481,16 +475,16 @@ class Pm
         }
         
         if (! $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . $this->getposttablename($index['plid']) . " WHERE plid='$index[plid]'")) {
-            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_lists WHERE plid='$index[plid]'");
-            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='$index[plid]'");
-            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_indexes WHERE plid='$index[plid]'");
+            $this->db->execute("DELETE FROM {{%pm_lists}} WHERE plid='$index[plid]'");
+            $this->db->execute("DELETE FROM {{%pm_members}} WHERE plid='$index[plid]'");
+            $this->db->execute("DELETE FROM {{%pm_indexes}} WHERE plid='$index[plid]'");
         } else {
-            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "pm_members SET pmnum=pmnum-" . ($updatenum + $deletenum) . " WHERE plid='" . $index['plid'] . "' AND uid='$uid'");
+            $this->db->execute("UPDATE {{%pm_members}} SET pmnum=pmnum-" . ($updatenum + $deletenum) . " WHERE plid='" . $index['plid'] . "' AND uid='$uid'");
         }
         return 1;
     }
 
-    function deletepmbypmids($uid, $pmids)
+    public function deletepmbypmids($uid, $pmids)
     {
         if ($pmids) {
             foreach ($pmids as $key => $pmid) {
@@ -500,7 +494,7 @@ class Pm
         return 1;
     }
 
-    function deletepmbyplid($uid, $plid, $isuser = 0)
+    public function deletepmbyplid($uid, $plid, $isuser = 0)
     {
         if (! $uid || ! $plid) {
             return 0;
@@ -508,9 +502,9 @@ class Pm
         
         if ($isuser) {
             $relationship = $this->relationship($uid, $plid);
-            $sql = "SELECT * FROM " . UC_DBTABLEPRE . "pm_lists WHERE min_max='$relationship'";
+            $sql = "SELECT * FROM {{%pm_lists}} WHERE min_max='$relationship'";
         } else {
-            $sql = "SELECT * FROM " . UC_DBTABLEPRE . "pm_lists WHERE plid='$plid'";
+            $sql = "SELECT * FROM {{%pm_lists}} WHERE plid='$plid'";
         }
         
         $query = $this->db->query($sql);
@@ -539,22 +533,22 @@ class Pm
             }
             $count = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . $this->getposttablename($list['plid']) . " WHERE plid='$list[plid]'");
             if (! $count) {
-                $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_lists WHERE plid='$list[plid]'");
-                $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='$list[plid]'");
-                $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_indexes WHERE plid='$list[plid]'");
+                $this->db->execute("DELETE FROM {{%pm_lists}} WHERE plid='$list[plid]'");
+                $this->db->execute("DELETE FROM {{%pm_members}} WHERE plid='$list[plid]'");
+                $this->db->execute("DELETE FROM {{%pm_indexes}} WHERE plid='$list[plid]'");
             } else {
-                $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='$list[plid]' AND uid='$uid'");
+                $this->db->execute("DELETE FROM {{%pm_members}} WHERE plid='$list[plid]' AND uid='$uid'");
             }
         } else {
             $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . $this->getposttablename($list['plid']) . " WHERE plid='$list[plid]'");
-            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_lists WHERE plid='$list[plid]'");
-            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='$list[plid]'");
-            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "pm_indexes WHERE plid='$list[plid]'");
+            $this->db->execute("DELETE FROM {{%pm_lists}} WHERE plid='$list[plid]'");
+            $this->db->execute("DELETE FROM {{%pm_members}} WHERE plid='$list[plid]'");
+            $this->db->execute("DELETE FROM {{%pm_indexes}} WHERE plid='$list[plid]'");
         }
         return 1;
     }
 
-    function deletepmbyplids($uid, $plids, $isuser = 0)
+    public function deletepmbyplids($uid, $plids, $isuser = 0)
     {
         if ($plids) {
             foreach ($plids as $key => $plid) {
@@ -564,7 +558,7 @@ class Pm
         return 1;
     }
 
-    function getprivatepmbyplid($uid, $plid, $starttime = 0, $endtime = 0, $start = 0, $ppp = 0)
+    public function getprivatepmbyplid($uid, $plid, $starttime = 0, $endtime = 0, $start = 0, $ppp = 0)
     {
         if (! $uid || ! $plid) {
             return 0;
@@ -572,7 +566,7 @@ class Pm
         if (! $this->isprivilege($plid, $uid)) {
             return 0;
         }
-        $thread = $this->db->fetch_first("SELECT * FROM " . UC_DBTABLEPRE . "pm_lists WHERE plid='$plid'");
+        $thread = $this->db->fetch_first("SELECT * FROM {{%pm_lists}} WHERE plid='$plid'");
         if ($thread['pmtype'] != 1) {
             return 0;
         }
@@ -599,12 +593,12 @@ class Pm
         } else {
             $limitsql = '';
         }
-        $pms = $this->db->fetch_all("SELECT t.*, p.*, t.authorid as founderuid, t.dateline as founddateline FROM " . UC_DBTABLEPRE . $this->getposttablename($plid) . " p LEFT JOIN " . UC_DBTABLEPRE . "pm_lists t ON p.plid=t.plid WHERE $addsql ORDER BY p.dateline DESC $limitsql");
-        $this->db->execute("UPDATE " . UC_DBTABLEPRE . "pm_members SET isnew=0 WHERE plid='$plid' AND uid='$uid' AND isnew=1");
+        $pms = $this->db->fetch_all("SELECT t.*, p.*, t.authorid as founderuid, t.dateline as founddateline FROM " . UC_DBTABLEPRE . $this->getposttablename($plid) . " p LEFT JOIN {{%pm_lists t ON p.plid=t.plid WHERE $addsql ORDER BY p.dateline DESC $limitsql");
+        $this->db->execute("UPDATE {{%pm_members SET isnew=0 WHERE plid='$plid' AND uid='$uid' AND isnew=1");
         return array_reverse($pms);
     }
 
-    function getchatpmbyplid($uid, $plid, $starttime = 0, $endtime = 0, $start = 0, $ppp = 0)
+    public function getchatpmbyplid($uid, $plid, $starttime = 0, $endtime = 0, $start = 0, $ppp = 0)
     {
         if (! $uid || ! $plid) {
             return 0;
@@ -630,18 +624,18 @@ class Pm
         } else {
             $limitsql = '';
         }
-        $query = $this->db->query("SELECT t.*, p.*, t.authorid as founderuid, t.dateline as founddateline FROM " . UC_DBTABLEPRE . $this->getposttablename($plid) . " p LEFT JOIN " . UC_DBTABLEPRE . "pm_lists t ON p.plid=t.plid WHERE $addsql ORDER BY p.dateline DESC $limitsql");
+        $query = $this->db->query("SELECT t.*, p.*, t.authorid as founderuid, t.dateline as founddateline FROM " . UC_DBTABLEPRE . $this->getposttablename($plid) . " p LEFT JOIN {{%pm_lists t ON p.plid=t.plid WHERE $addsql ORDER BY p.dateline DESC $limitsql");
         while ($pm = $this->db->fetch_array($query)) {
             if ($pm['pmtype'] != 2) {
                 return 0;
             }
             $pms[] = $pm;
         }
-        $this->db->execute("UPDATE " . UC_DBTABLEPRE . "pm_members SET isnew=0 WHERE plid='$plid' AND uid='$uid' AND isnew=1");
+        $this->db->execute("UPDATE {{%pm_members SET isnew=0 WHERE plid='$plid' AND uid='$uid' AND isnew=1");
         return array_reverse($pms);
     }
 
-    function getpmlist($uid, $filter, $start, $ppp = 10)
+    public function getpmlist($uid, $filter, $start, $ppp = 10)
     {
         if (! $uid) {
             return 0;
@@ -653,7 +647,7 @@ class Pm
         } else {
             $addsql = '';
         }
-        $query = $this->db->query("SELECT * FROM " . UC_DBTABLEPRE . "pm_members m LEFT JOIN " . UC_DBTABLEPRE . "pm_lists t ON t.plid=m.plid WHERE $addsql m.uid='$uid' ORDER BY m.lastdateline DESC LIMIT $start, $ppp");
+        $query = $this->db->query("SELECT * FROM {{%pm_members m LEFT JOIN {{%pm_lists t ON t.plid=m.plid WHERE $addsql m.uid='$uid' ORDER BY m.lastdateline DESC LIMIT $start, $ppp");
         while ($member = $this->db->fetch_array($query)) {
             if ($member['pmtype'] == 1) {
                 $users = explode('_', $member['min_max']);
@@ -665,7 +659,7 @@ class Pm
             $members[] = $member;
         }
         
-        $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "newpm WHERE uid='$uid'");
+        $this->db->execute("DELETE FROM {{%newpm WHERE uid='$uid'");
         
         $array = array();
         if ($members) {
@@ -715,36 +709,36 @@ class Pm
         return $array;
     }
 
-    function getplidbypmid($pmid)
+    public function getplidbypmid($pmid)
     {
         if (! $pmid) {
             return false;
         }
-        return $this->db->result_first("SELECT plid FROM " . UC_DBTABLEPRE . "pm_indexes WHERE pmid='$pmid'");
+        return $this->db->result_first("SELECT plid FROM {{%pm_indexes}} WHERE pmid='$pmid'");
     }
 
-    function getplidbytouid($uid, $touid)
+    public function getplidbytouid($uid, $touid)
     {
         if (! $uid || ! $touid) {
             return 0;
         }
-        return $this->db->result_first("SELECT plid FROM " . UC_DBTABLEPRE . "pm_lists WHERE min_max='" . $this->relationship($uid, $touid) . "'");
+        return $this->db->result_first("SELECT plid FROM {{%pm_lists}} WHERE min_max='" . $this->relationship($uid, $touid) . "'");
     }
 
-    function getuidbyplid($plid)
+    public function getuidbyplid($plid)
     {
         if (! $plid) {
             return array();
         }
         $uidarr = array();
-        $query = $this->db->query("SELECT uid FROM " . UC_DBTABLEPRE . "pm_members WHERE plid='$plid'");
+        $query = $this->db->query("SELECT uid FROM {{%pm_members}} WHERE plid='$plid'");
         while ($uid = $this->db->fetch_array($query)) {
             $uidarr[$uid['uid']] = $uid['uid'];
         }
         return $uidarr;
     }
 
-    function chatpmmemberlist($uid, $plid)
+    public function chatpmmemberlist($uid, $plid)
     {
         if (! $uid || ! $plid) {
             return 0;
@@ -756,14 +750,14 @@ class Pm
         if (! isset($uidarr[$uid])) {
             return 0;
         }
-        $authorid = $this->db->result_first("SELECT authorid FROM " . UC_DBTABLEPRE . "pm_lists WHERE plid='$plid'");
+        $authorid = $this->db->result_first("SELECT authorid FROM {{%pm_lists}} WHERE plid='$plid'");
         return array(
             'author' => $authorid,
             'member' => $uidarr
         );
     }
 
-    function relationship($fromuid, $touid)
+    public function relationship($fromuid, $touid)
     {
         if ($fromuid < $touid) {
             return $fromuid . '_' . $touid;
@@ -774,20 +768,20 @@ class Pm
         }
     }
 
-    function getposttablename($plid)
+    public function getposttablename($plid)
     {
         $id = substr((string) $plid, - 1, 1);
         return 'pm_messages_' . intval($id);
     }
 
-    function get_blackls($uid, $uids = array())
+    public function get_blackls($uid, $uids = array())
     {
         if (! $uids) {
-            $blackls = $this->db->result_first("SELECT blacklist FROM " . UC_DBTABLEPRE . "memberfields WHERE uid='$uid'");
+            $blackls = $this->db->result_first("SELECT blacklist FROM {{%memberfields}} WHERE uid='$uid'");
         } else {
             $uids = $this->base->implode($uids);
             $blackls = array();
-            $query = $this->db->query("SELECT uid, blacklist FROM " . UC_DBTABLEPRE . "memberfields WHERE uid IN ($uids)");
+            $query = $this->db->query("SELECT uid, blacklist FROM {{%memberfields}} WHERE uid IN ($uids)");
             while ($data = $this->db->fetch_array($query)) {
                 $blackls[$data['uid']] = explode(',', $data['blacklist']);
             }
@@ -795,13 +789,13 @@ class Pm
         return $blackls;
     }
 
-    function set_blackls($uid, $blackls)
+    public function set_blackls($uid, $blackls)
     {
-        $this->db->execute("UPDATE " . UC_DBTABLEPRE . "memberfields SET blacklist='$blackls' WHERE uid='$uid'");
+        $this->db->execute("UPDATE {{%memberfields}} SET blacklist='$blackls' WHERE uid='$uid'");
         return $this->db->affected_rows();
     }
 
-    function update_blackls($uid, $username, $action = 1)
+    public function update_blackls($uid, $username, $action = 1)
     {
         $username = ! is_array($username) ? array(
             $username
@@ -809,7 +803,7 @@ class Pm
         if ($action == 1) {
             if (! in_array('{ALL}', $username)) {
                 $usernames = $this->base->implode($username);
-                $query = $this->db->query("SELECT username FROM " . UC_DBTABLEPRE . "members WHERE username IN ($usernames)");
+                $query = $this->db->query("SELECT username FROM {{%members}} WHERE username IN ($usernames)");
                 $usernames = array();
                 while ($data = $this->db->fetch_array($query)) {
                     $usernames[addslashes($data['username'])] = addslashes($data['username']);
@@ -817,7 +811,7 @@ class Pm
                 if (! $usernames) {
                     return 0;
                 }
-                $blackls = addslashes($this->db->result_first("SELECT blacklist FROM " . UC_DBTABLEPRE . "memberfields WHERE uid='$uid'"));
+                $blackls = addslashes($this->db->result_first("SELECT blacklist FROM {{%memberfields}} WHERE uid='$uid'"));
                 if ($blackls) {
                     $list = explode(',', $blackls);
                     foreach ($list as $k => $v) {
@@ -832,11 +826,11 @@ class Pm
                 $listnew = implode(',', $usernames);
                 $blackls .= $blackls !== '' ? ',' . $listnew : $listnew;
             } else {
-                $blackls = addslashes($this->db->result_first("SELECT blacklist FROM " . UC_DBTABLEPRE . "memberfields WHERE uid='$uid'"));
+                $blackls = addslashes($this->db->result_first("SELECT blacklist FROM {{%memberfields}} WHERE uid='$uid'"));
                 $blackls .= ',{ALL}';
             }
         } else {
-            $blackls = addslashes($this->db->result_first("SELECT blacklist FROM " . UC_DBTABLEPRE . "memberfields WHERE uid='$uid'"));
+            $blackls = addslashes($this->db->result_first("SELECT blacklist FROM {{%memberfields}} WHERE uid='$uid'"));
             $list = $blackls = explode(',', $blackls);
             foreach ($list as $k => $v) {
                 if (in_array($v, $username)) {
@@ -845,11 +839,11 @@ class Pm
             }
             $blackls = implode(',', $blackls);
         }
-        $this->db->execute("UPDATE " . UC_DBTABLEPRE . "memberfields SET blacklist='$blackls' WHERE uid='$uid'");
+        $this->db->execute("UPDATE {{%memberfields}} SET blacklist='$blackls' WHERE uid='$uid'");
         return 1;
     }
 
-    function removecode($str, $length)
+    public function removecode($str, $length)
     {
         static $uccode = null;
         if ($uccode === null) {
@@ -859,7 +853,7 @@ class Pm
         return trim($this->base->cutstr(strip_tags($str), $length));
     }
 
-    function ispminterval($uid, $interval = 0)
+    public function ispminterval($uid, $interval = 0)
     {
         if (! $uid) {
             return 0;
@@ -868,7 +862,7 @@ class Pm
         if (! $interval) {
             return 1;
         }
-        $lastupdate = $this->db->result_first("SELECT lastupdate FROM " . UC_DBTABLEPRE . "pm_members WHERE uid='$uid' ORDER BY lastupdate DESC LIMIT 1");
+        $lastupdate = $this->db->result_first("SELECT lastupdate FROM {{%pm_members}} WHERE uid='$uid' ORDER BY lastupdate DESC LIMIT 1");
         if (($this->base->time - $lastupdate) > $interval) {
             return 1;
         } else {
@@ -876,7 +870,7 @@ class Pm
         }
     }
 
-    function isprivatepmthreadlimit($uid, $maxnum = 0)
+    public function isprivatepmthreadlimit($uid, $maxnum = 0)
     {
         if (! $uid) {
             return 0;
@@ -885,7 +879,7 @@ class Pm
         if (! $maxnum) {
             return 1;
         }
-        $num = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . "pm_members m LEFT JOIN " . UC_DBTABLEPRE . "pm_lists t ON m.plid=t.plid WHERE uid='$uid' AND lastupdate>'" . ($this->base->time - 86400) . "' AND t.pmtype=1");
+        $num = $this->db->result_first("SELECT COUNT(*) FROM {{%pm_members}} m LEFT JOIN {{%pm_lists}} t ON m.plid=t.plid WHERE uid='$uid' AND lastupdate>'" . ($this->base->time - 86400) . "' AND t.pmtype=1");
         if ($maxnum - $num < 0) {
             return 0;
         } else {
@@ -893,7 +887,7 @@ class Pm
         }
     }
 
-    function ischatpmthreadlimit($uid, $maxnum = 0)
+    public function ischatpmthreadlimit($uid, $maxnum = 0)
     {
         if (! $uid) {
             return 0;
@@ -902,7 +896,7 @@ class Pm
         if (! $maxnum) {
             return 1;
         }
-        $num = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . "pm_lists WHERE authorid='$uid' AND dateline>'" . ($this->base->time - 86400) . "'");
+        $num = $this->db->result_first("SELECT COUNT(*) FROM {{%pm_lists}} WHERE authorid='$uid' AND dateline>'" . ($this->base->time - 86400) . "'");
         if ($maxnum - $num < 0) {
             return 0;
         } else {

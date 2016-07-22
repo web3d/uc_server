@@ -2,48 +2,41 @@
 
 namespace uc\server\app\model;
 
-class Friend
+use uc\server\app\base\Model;
+
+class Friend extends Model
 {
+    protected $tableName = '{{%friends}}';
 
-    var $db;
-
-    var $base;
-
-    function __construct(&$base)
+    public function add($uid, $friendid, $comment = '')
     {
-        $this->base = $base;
-        $this->db = $base->db;
-    }
-
-    function add($uid, $friendid, $comment = '')
-    {
-        $direction = $this->db->result_first("SELECT direction FROM " . UC_DBTABLEPRE . "friends WHERE uid='$friendid' AND friendid='$uid' LIMIT 1");
+        $direction = $this->db->result_first("SELECT direction FROM {{%friends}} WHERE uid='$friendid' AND friendid='$uid' LIMIT 1");
         if ($direction == 1) {
-            $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "friends SET uid='$uid', friendid='$friendid', comment='$comment', direction='3'", 'SILENT');
-            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "friends SET direction='3' WHERE uid='$friendid' AND friendid='$uid'");
+            $this->db->execute("INSERT INTO {{%friends}} SET uid='$uid', friendid='$friendid', comment='$comment', direction='3'", 'SILENT');
+            $this->db->execute("UPDATE {{%friends}} SET direction='3' WHERE uid='$friendid' AND friendid='$uid'");
             return 1;
         } elseif ($direction == 2) {
             return 1;
         } elseif ($direction == 3) {
             return - 1;
         } else {
-            $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "friends SET uid='$uid', friendid='$friendid', comment='$comment', direction='1'", 'SILENT');
+            $this->db->execute("INSERT INTO {{%friends}} SET uid='$uid', friendid='$friendid', comment='$comment', direction='1'", 'SILENT');
             return $this->db->insert_id();
         }
     }
 
-    function delete($uid, $friendids)
+    public function delete($uid, $friendids)
     {
         $friendids = $this->base->implode($friendids);
-        $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "friends WHERE uid='$uid' AND friendid IN ($friendids)");
+        $this->db->execute("DELETE FROM {{%friends}} WHERE uid='$uid' AND friendid IN ($friendids)");
         $affectedrows = $this->db->affected_rows();
         if ($affectedrows > 0) {
-            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "friends SET direction=1 WHERE uid IN ($friendids) AND friendid='$uid' AND direction='3'");
+            $this->db->execute("UPDATE {{%friends}} SET direction=1 WHERE uid IN ($friendids) AND friendid='$uid' AND direction='3'");
         }
         return $affectedrows;
     }
 
-    function get_totalnum_by_uid($uid, $direction = 0)
+    public function get_totalnum_by_uid($uid, $direction = 0)
     {
         $sqladd = '';
         if ($direction == 0) {
@@ -55,11 +48,11 @@ class Friend
         } elseif ($direction == 3) {
             $sqladd = "uid='$uid' AND direction='3'";
         }
-        $totalnum = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . "friends WHERE $sqladd");
+        $totalnum = $this->db->result_first("SELECT COUNT(*) FROM {{%friends}} WHERE $sqladd");
         return $totalnum;
     }
 
-    function get_list($uid, $page, $pagesize, $totalnum, $direction = 0)
+    public function get_list($uid, $page, $pagesize, $totalnum, $direction = 0)
     {
         $start = $this->base->page_get_start($page, $pagesize, $totalnum);
         $sqladd = '';
@@ -73,14 +66,14 @@ class Friend
             $sqladd = "f.uid='$uid' AND f.direction='3'";
         }
         if ($sqladd) {
-            $data = $this->db->fetch_all("SELECT f.*, m.username FROM " . UC_DBTABLEPRE . "friends f LEFT JOIN " . UC_DBTABLEPRE . "members m ON f.friendid=m.uid WHERE $sqladd LIMIT $start, $pagesize");
+            $data = $this->db->fetch_all("SELECT f.*, m.username FROM {{%friends}} f LEFT JOIN {{%members}} m ON f.friendid=m.uid WHERE $sqladd LIMIT $start, $pagesize");
             return $data;
         } else {
             return array();
         }
     }
 
-    function is_friend($uid, $friendids, $direction = 0)
+    public function is_friend($uid, $friendids, $direction = 0)
     {
         $friendid_str = implode("', '", $friendids);
         $sqladd = '';
@@ -93,7 +86,7 @@ class Friend
         } elseif ($direction == 3) {
             $sqladd = "uid='$uid' AND friendid IN ('$friendid_str') AND direction='3'";
         }
-        if ($this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . "friends WHERE $sqladd") == count($friendids)) {
+        if ($this->db->result_first("SELECT COUNT(*) FROM {{%friends}} WHERE $sqladd") == count($friendids)) {
             return true;
         } else {
             return false;

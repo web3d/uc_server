@@ -2,20 +2,13 @@
 
 namespace uc\server\app\model;
 
-class Setting
+use uc\server\app\base\Model;
+
+class Setting extends Model
 {
+    protected $tableName = '{{%settings}}';
 
-    var $db;
-
-    var $base;
-
-    function __construct(&$base)
-    {
-        $this->base = $base;
-        $this->db = $base->db;
-    }
-
-    function get_settings($keys = '')
+    public function get_settings($keys = '')
     {
         if ($keys) {
             $keys = $this->base->implode($keys);
@@ -23,8 +16,8 @@ class Setting
         } else {
             $sqladd = '1';
         }
-        $arr = array();
-        $arr = $this->db->fetch_all("SELECT * FROM " . UC_DBTABLEPRE . "settings WHERE $sqladd");
+        
+        $arr = $this->db->fetch_all("SELECT * FROM {{%settings}} WHERE $sqladd");
         if ($arr) {
             foreach ($arr as $k => $v) {
                 $arr[$v['k']] = $v['v'];

@@ -2,38 +2,32 @@
 
 namespace uc\server\app\model;
 
-class User
+use uc\server\app\base\Model;
+
+class User extends Model
 {
 
-    var $db;
+    protected $tableName = '{{%members}}';
 
-    var $base;
-
-    function __construct(&$base)
+    public function get_user_by_uid($uid)
     {
-        $this->base = $base;
-        $this->db = $base->db;
-    }
-
-    function get_user_by_uid($uid)
-    {
-        $arr = $this->db->fetch_first("SELECT * FROM " . UC_DBTABLEPRE . "members WHERE uid='$uid'");
+        $arr = $this->db->fetch_first("SELECT * FROM {{%members}} WHERE uid='$uid'");
         return $arr;
     }
 
-    function get_user_by_username($username)
+    public function get_user_by_username($username)
     {
-        $arr = $this->db->fetch_first("SELECT * FROM " . UC_DBTABLEPRE . "members WHERE username='$username'");
+        $arr = $this->db->fetch_first("SELECT * FROM {{%members}} WHERE username='$username'");
         return $arr;
     }
 
-    function get_user_by_email($email)
+    public function get_user_by_email($email)
     {
-        $arr = $this->db->fetch_first("SELECT * FROM " . UC_DBTABLEPRE . "members WHERE email='$email'");
+        $arr = $this->db->fetch_first("SELECT * FROM {{%members}} WHERE email='$email'");
         return $arr;
     }
 
-    function check_username($username)
+    public function check_username($username)
     {
         $guestexp = '\xA1\xA1|\xAC\xA3|^Guest|^\xD3\xCE\xBF\xCD|\xB9\x43\xAB\xC8';
         $len = $this->dstrlen($username);
@@ -44,7 +38,7 @@ class User
         }
     }
 
-    function dstrlen($str)
+    public function dstrlen($str)
     {
         if (strtolower(UC_CHARSET) != 'utf-8') {
             return strlen($str);
@@ -66,13 +60,13 @@ class User
         return $count;
     }
 
-    function check_mergeuser($username)
+    public function check_mergeuser($username)
     {
-        $data = $this->db->result_first("SELECT count(*) FROM " . UC_DBTABLEPRE . "mergemembers WHERE appid='" . $this->base->app['appid'] . "' AND username='$username'");
+        $data = $this->db->result_first("SELECT count(*) FROM {{%mergemembers}} WHERE appid='" . $this->base->app['appid'] . "' AND username='$username'");
         return $data;
     }
 
-    function check_usernamecensor($username)
+    public function check_usernamecensor($username)
     {
         $_CACHE['badwords'] = $this->base->cache('badwords');
         $censorusername = $this->base->get_setting('censorusername');
@@ -94,18 +88,18 @@ class User
         }
     }
 
-    function check_usernameexists($username)
+    public function check_usernameexists($username)
     {
-        $data = $this->db->result_first("SELECT username FROM " . UC_DBTABLEPRE . "members WHERE username='$username'");
+        $data = $this->db->result_first("SELECT username FROM {{%members}} WHERE username='$username'");
         return $data;
     }
 
-    function check_emailformat($email)
+    public function check_emailformat($email)
     {
         return strlen($email) > 6 && strlen($email) <= 32 && preg_match("/^([a-z0-9\-_.+]+)@([a-z0-9\-]+[.][a-z0-9\-.]+)$/", $email);
     }
 
-    function check_emailaccess($email)
+    public function check_emailaccess($email)
     {
         $setting = $this->base->get_setting(array(
             'accessemail',
@@ -126,14 +120,14 @@ class User
         }
     }
 
-    function check_emailexists($email, $username = '')
+    public function check_emailexists($email, $username = '')
     {
         $sqladd = $username !== '' ? "AND username<>'$username'" : '';
-        $email = $this->db->result_first("SELECT email FROM  " . UC_DBTABLEPRE . "members WHERE email='$email' $sqladd");
+        $email = $this->db->result_first("SELECT email FROM {{%members}} WHERE email='$email' $sqladd");
         return $email;
     }
 
-    function check_login($username, $password, &$user)
+    public function check_login($username, $password, &$user)
     {
         $user = $this->get_user_by_username($username);
         if (empty($user['username'])) {
@@ -144,25 +138,25 @@ class User
         return $user['uid'];
     }
 
-    function add_user($username, $password, $email, $uid = 0, $questionid = '', $answer = '', $regip = '')
+    public function add_user($username, $password, $email, $uid = 0, $questionid = '', $answer = '', $regip = '')
     {
         $regip = empty($regip) ? $this->base->onlineip : $regip;
         $salt = substr(uniqid(rand()), - 6);
         $password = md5(md5($password) . $salt);
         $sqladd = $uid ? "uid='" . intval($uid) . "'," : '';
         $sqladd .= $questionid > 0 ? " secques='" . $this->quescrypt($questionid, $answer) . "'," : " secques='',";
-        $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "members SET $sqladd username='$username', password='$password', email='$email', regip='$regip', regdate='" . $this->base->time . "', salt='$salt'");
+        $this->db->execute("INSERT INTO {{%members}} SET $sqladd username='$username', password='$password', email='$email', regip='$regip', regdate='" . $this->base->time . "', salt='$salt'");
         $uid = $this->db->insert_id();
-        $this->db->execute("INSERT INTO " . UC_DBTABLEPRE . "memberfields SET uid='$uid'");
+        $this->db->execute("INSERT INTO {{%memberfields}} SET uid='$uid'");
         return $uid;
     }
 
-    function edit_user($username, $oldpw, $newpw, $email, $ignoreoldpw = 0, $questionid = '', $answer = '')
+    public function edit_user($username, $oldpw, $newpw, $email, $ignoreoldpw = 0, $questionid = '', $answer = '')
     {
-        $data = $this->db->fetch_first("SELECT username, uid, password, salt FROM " . UC_DBTABLEPRE . "members WHERE username='$username'");
+        $data = $this->db->fetch_first("SELECT username, uid, password, salt FROM {{%members}} WHERE username='$username'");
         
         if ($ignoreoldpw) {
-            $isprotected = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . "protectedmembers WHERE uid = '$data[uid]'");
+            $isprotected = $this->db->result_first("SELECT COUNT(*) FROM {{%protectedmembers}} WHERE uid = '$data[uid]'");
             if ($isprotected) {
                 return - 8;
             }
@@ -182,29 +176,29 @@ class User
             }
         }
         if ($sqladd || $emailadd) {
-            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "members SET $sqladd WHERE username='$username'");
+            $this->db->execute("UPDATE {{%members}} SET $sqladd WHERE username='$username'");
             return $this->db->affected_rows();
         } else {
             return - 7;
         }
     }
 
-    function delete_user($uidsarr)
+    public function delete_user($uidsarr)
     {
         $uidsarr = (array) $uidsarr;
         if (! $uidsarr) {
             return 0;
         }
         $uids = $this->base->implode($uidsarr);
-        $arr = $this->db->fetch_all("SELECT uid FROM " . UC_DBTABLEPRE . "protectedmembers WHERE uid IN ($uids)");
+        $arr = $this->db->fetch_all("SELECT uid FROM {{%protectedmembers}} WHERE uid IN ($uids)");
         $puids = array();
         foreach ((array) $arr as $member) {
             $puids[] = $member['uid'];
         }
         $uids = $this->base->implode(array_diff($uidsarr, $puids));
         if ($uids) {
-            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "members WHERE uid IN($uids)");
-            $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "memberfields WHERE uid IN($uids)");
+            $this->db->execute("DELETE FROM {{%members}} WHERE uid IN($uids)");
+            $this->db->execute("DELETE FROM {{%memberfields}} WHERE uid IN($uids)");
             $this->delete_useravatar($uidsarr);
             $this->base->load('note');
             $_ENV['note']->add('deleteuser', "ids=$uids");
@@ -214,7 +208,7 @@ class User
         }
     }
 
-    function delete_useravatar($uidsarr)
+    public function delete_useravatar($uidsarr)
     {
         $uidsarr = (array) $uidsarr;
         foreach ((array) $uidsarr as $uid) {
@@ -227,24 +221,24 @@ class User
         }
     }
 
-    function get_total_num($sqladd = '')
+    public function get_total_num($sqladd = '')
     {
-        $data = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . "members $sqladd");
+        $data = $this->db->result_first("SELECT COUNT(*) FROM {{%members}} $sqladd");
         return $data;
     }
 
-    function get_list($page, $ppp, $totalnum, $sqladd)
+    public function get_list($page, $ppp, $totalnum, $sqladd)
     {
         $start = $this->base->page_get_start($page, $ppp, $totalnum);
-        $data = $this->db->fetch_all("SELECT * FROM " . UC_DBTABLEPRE . "members $sqladd LIMIT $start, $ppp");
+        $data = $this->db->fetch_all("SELECT * FROM {{%members}} $sqladd LIMIT $start, $ppp");
         return $data;
     }
 
-    function name2id($usernamesarr)
+    public function name2id($usernamesarr)
     {
         $usernamesarr = daddslashes($usernamesarr, 1, TRUE);
         $usernames = $this->base->implode($usernamesarr);
-        $query = $this->db->query("SELECT uid FROM " . UC_DBTABLEPRE . "members WHERE username IN($usernames)");
+        $query = $this->db->query("SELECT uid FROM {{%members}} WHERE username IN($usernames)");
         $arr = array();
         while ($user = $this->db->fetch_array($query)) {
             $arr[] = $user['uid'];
@@ -252,10 +246,10 @@ class User
         return $arr;
     }
 
-    function id2name($uidarr)
+    public function id2name($uidarr)
     {
         $arr = array();
-        $query = $this->db->query("SELECT uid, username FROM " . UC_DBTABLEPRE . "members WHERE uid IN (" . $this->base->implode($uidarr) . ")");
+        $query = $this->db->query("SELECT uid, username FROM {{%members}} WHERE uid IN (" . $this->base->implode($uidarr) . ")");
         while ($user = $this->db->fetch_array($query)) {
             $arr[$user['uid']] = $user['username'];
         }
@@ -267,7 +261,7 @@ class User
         return $questionid > 0 && $answer != '' ? substr(md5($answer . md5($questionid)), 16, 8) : '';
     }
 
-    function can_do_login($username, $ip = '')
+    public function can_do_login($username, $ip = '')
     {
         $check_times = $this->base->settings['login_failedtime'] < 1 ? 5 : $this->base->settings['login_failedtime'];
         
@@ -278,7 +272,7 @@ class User
         }
         
         $ip_check = $user_check = array();
-        $query = $this->db->query("SELECT * FROM " . UC_DBTABLEPRE . "failedlogins WHERE ip='" . $ip . "' OR ip='$username'");
+        $query = $this->db->query("SELECT * FROM {{%failedlogins}} WHERE ip='" . $ip . "' OR ip='$username'");
         while ($row = $this->db->fetch_array($query)) {
             if ($row['ip'] === $username) {
                 $user_check = $row;
@@ -289,12 +283,12 @@ class User
         
         if (empty($ip_check) || ($this->base->time - $ip_check['lastupdate'] > $expire)) {
             $ip_check = array();
-            $this->db->execute("REPLACE INTO " . UC_DBTABLEPRE . "failedlogins (ip, count, lastupdate) VALUES ('{$ip}', '0', '{$this->base->time}')");
+            $this->db->execute("REPLACE INTO {{%failedlogins}} (ip, count, lastupdate) VALUES ('{$ip}', '0', '{$this->base->time}')");
         }
         
         if (empty($user_check) || ($this->base->time - $user_check['lastupdate'] > $expire)) {
             $user_check = array();
-            $this->db->execute("REPLACE INTO " . UC_DBTABLEPRE . "failedlogins (ip, count, lastupdate) VALUES ('{$username}', '0', '{$this->base->time}')");
+            $this->db->execute("REPLACE INTO {{%failedlogins}} (ip, count, lastupdate) VALUES ('{$username}', '0', '{$this->base->time}')");
         }
         
         if ($ip_check || $user_check) {
@@ -302,17 +296,17 @@ class User
             return $time_left;
         }
         
-        $this->db->execute("DELETE FROM " . UC_DBTABLEPRE . "failedlogins WHERE lastupdate<" . ($this->base->time - ($expire + 1)), 'UNBUFFERED');
+        $this->db->execute("DELETE FROM {{%failedlogins}} WHERE lastupdate<" . ($this->base->time - ($expire + 1)), 'UNBUFFERED');
         
         return $check_times;
     }
 
-    function loginfailed($username, $ip = '')
+    public function loginfailed($username, $ip = '')
     {
         $username = substr(md5($username), 8, 15);
         if (! $ip) {
             $ip = $this->base->onlineip;
         }
-        $this->db->execute("UPDATE " . UC_DBTABLEPRE . "failedlogins SET count=count+1, lastupdate='" . $this->base->time . "' WHERE ip='" . $ip . "' OR ip='$username'");
+        $this->db->execute("UPDATE {{%failedlogins}} SET count=count+1, lastupdate='" . $this->base->time . "' WHERE ip='" . $ip . "' OR ip='$username'");
     }
 }

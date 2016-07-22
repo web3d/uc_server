@@ -2,20 +2,16 @@
 
 namespace uc\server\app\model;
 
-class Plugin
+use uc\server\app\base\Model;
+use ucs\helpers\ArrayHelper;
+
+/**
+ * 插件管理
+ */
+class Plugin extends Model
 {
 
-    var $db;
-
-    var $base;
-
-    function __construct(&$base)
-    {
-        $this->base = $base;
-        $this->db = $base->db;
-    }
-
-    function get_plugins()
+    public function get_plugins()
     {
         $arr = array();
         $dir = UC_ROOT . './plugin';
@@ -29,57 +25,37 @@ class Plugin
                 $arr[] = $arr1;
             }
         }
-        $arr = $this->orderby_tabindex($arr);
+        
+        ArrayHelper::multisort($arr, 'tabindex');
+        
         return $arr;
     }
 
-    function get_plugin($pluginname)
+    public function get_plugin($pluginname)
     {
         $f = file_get_contents(UC_ROOT . "./plugin/$pluginname/plugin.xml");
         return xml_unserialize($f);
     }
 
-    function get_plugin_by_name($pluginname)
-    {
-        $dir = UC_ROOT . './plugin';
-        $s = file_get_contents($dir . '/' . $pluginname . '/plugin.xml');
-        return xml_unserialize($s, TRUE);
-    }
-
-    function orderby_tabindex($arr1)
-    {
-        $arr2 = array();
-        $t = array();
-        foreach ($arr1 as $k => $v) {
-            $t[$k] = $v['tabindex'];
-        }
-        asort($t);
-        $arr3 = array();
-        foreach ($t as $k => $v) {
-            $arr3[$k] = $arr1[$k];
-        }
-        return $arr3;
-    }
-
-    function cert_get_file()
+    public function cert_get_file()
     {
         return UC_ROOT . './data/tmp/ucenter_' . substr(md5(UC_KEY), 0, 16) . '.cert';
     }
 
-    function cert_dump_encode($arr, $life = 0)
+    public function cert_dump_encode($arr, $life = 0)
     {
-        $s = "# UCenter Applications Setting Dump\n" . "# Version: UCenter " . UC_SERVER_VERSION . "\n" . "# Time: " . $this->time . "\n" . "# Expires: " . ($this->time + $life) . "\n" . "# From: " . UC_API . "\n" . "#\n" . "# This file was BASE64 encoded\n" . "#\n" . "# UCenter Community: http://www.discuz.net\n" . "# Please visit our website for latest news about UCenter\n" . "# --------------------------------------------------------\n\n\n" . wordwrap(base64_encode(serialize($arr)), 50, "\n", 1);
+        $s = "# UCenter Applications Setting Dump\n" . "# Version: UCenter " . UC_SERVER_VERSION . "\n" . "# Time: " . $this->base->time . "\n" . "# Expires: " . ($this->base->time + $life) . "\n" . "# From: " . UC_API . "\n" . "#\n" . "# This file was BASE64 encoded\n" . "#\n" . "# UCenter Community: http://www.discuz.net\n" . "# Please visit our website for latest news about UCenter\n" . "# --------------------------------------------------------\n\n\n" . wordwrap(base64_encode(serialize($arr)), 50, "\n", 1);
         return $s;
     }
 
-    function cert_dump_decode($certfile)
+    public function cert_dump_decode($certfile)
     {
         $s = @file_get_contents($certfile);
         if (empty($s)) {
             return array();
         }
         preg_match("/# Expires: (.*?)\n/", $s, $m);
-        if (empty($m[1]) || $m[1] < $this->time) {
+        if (empty($m[1]) || $m[1] < $this->base->time) {
             unlink($certfile);
             return array();
         }

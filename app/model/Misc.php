@@ -2,21 +2,10 @@
 
 namespace uc\server\app\model;
 
-define('UC_ARRAY_SEP_1', 'UC_ARRAY_SEP_1');
-define('UC_ARRAY_SEP_2', 'UC_ARRAY_SEP_2');
-
 class Misc
 {
-
-    var $db;
-
-    var $base;
-
-    function __construct(&$base)
-    {
-        $this->base = $base;
-        $this->db = $base->db;
-    }
+    const UC_ARRAY_SEP_1 = 'UC_ARRAY_SEP_1';
+    const UC_ARRAY_SEP_2 = 'UC_ARRAY_SEP_2';    
 
     function get_host_by_url($url)
     {
@@ -137,8 +126,8 @@ class Misc
         $s = $sep = '';
         if ($arr && is_array($arr)) {
             foreach ($arr as $k => $v) {
-                $s .= $sep . addslashes($k) . UC_ARRAY_SEP_1 . $v;
-                $sep = UC_ARRAY_SEP_2;
+                $s .= $sep . addslashes($k) . static::UC_ARRAY_SEP_1 . $v;
+                $sep = static::UC_ARRAY_SEP_2;
             }
         }
         return $s;
@@ -146,10 +135,10 @@ class Misc
 
     function string2array($s)
     {
-        $arr = explode(UC_ARRAY_SEP_2, $s);
+        $arr = explode(static::UC_ARRAY_SEP_2, $s);
         $arr2 = array();
         foreach ($arr as $k => $v) {
-            list ($key, $val) = explode(UC_ARRAY_SEP_1, $v);
+            list ($key, $val) = explode(static::UC_ARRAY_SEP_1, $v);
             $arr2[$key] = $val;
         }
         return $arr2;

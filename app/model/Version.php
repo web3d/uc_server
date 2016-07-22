@@ -2,22 +2,16 @@
 
 namespace uc\server\app\model;
 
-class Version
+use uc\server\app\base\Model;
+
+class Version extends Model
 {
 
-    var $db;
+    protected $tableName = '{{%settings}}';
 
-    var $base;
-
-    function __construct(&$base)
+    public function check()
     {
-        $this->base = $base;
-        $this->db = $base->db;
-    }
-
-    function check()
-    {
-        $data = $this->db->result_first("SELECT v FROM " . UC_DBTABLEPRE . "settings WHERE k='version'");
+        $data = $this->db->result_first("SELECT v FROM {{%settings}} WHERE k='version'");
         return $data;
     }
 }
