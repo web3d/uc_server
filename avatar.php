@@ -35,7 +35,7 @@ if (file_exists(dirname(__FILE__) . '/' . $avatar)) {
         'middle',
         'small'
     )) ? $size : 'middle';
-    $avatar_url = 'images/noavatar_' . $size . '.gif';
+    $avatar_url = 'static/images/noavatar_' . $size . '.gif';
 }
 
 if (empty($random)) {
