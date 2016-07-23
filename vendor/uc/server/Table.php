@@ -102,7 +102,7 @@ class Table extends Query
     public function find($condition, $field = '*')
     {
         return $this->select($field)
-                ->from($this->name)
+                ->from($this->getName())
                 ->where($condition)
                 ->createCommand($this->conn)
                 ->queryOne();
@@ -146,7 +146,7 @@ class Table extends Query
      */
     public function insert($columns)
     {
-        $this->cmd->insert($this->name, $columns)->execute();
+        $this->cmd->insert($this->getName(), $columns)->execute();
         return $this->conn->getLastInsertID();
     }
     
@@ -160,7 +160,7 @@ class Table extends Query
     public function update(array $columns, $condition)
     {
         return $this->cmd
-                ->update($this->name, $columns, $condition)
+                ->update($this->getName(), $columns, $condition)
                 ->execute();
     }
     
@@ -173,7 +173,7 @@ class Table extends Query
     public function delete($condition, array $params = [])
     {
         return $this->cmd
-                ->delete($this->name, $condition, $params)
+                ->delete($this->getName(), $condition, $params)
                 ->execute();
     }
 }
