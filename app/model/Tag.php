@@ -33,7 +33,7 @@ class Tag extends Model
                 $datanew[] = $_ENV['misc']->array2string($r);
             }
         }
-        $tmp = $_ENV['app']->get_apps('type', "appid='$appid'");
+        $tmp = $_ENV['app']->get_apps('type', ['appid' => $appid]);
         $datanew = addslashes($tmp[0]['type'] . "\t" . implode("\t", $datanew));
         if (! empty($data[0])) {
             $return = $this->db->result_first("SELECT count(*) FROM {{%tags}} WHERE tagname='$data[0]' AND appid='$appid'");
