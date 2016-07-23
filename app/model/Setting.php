@@ -2,28 +2,15 @@
 
 namespace uc\server\app\model;
 
-use uc\server\app\base\Model;
+use uc\server\Table;
 
-class Setting extends Model
+class Setting extends Table
 {
-    protected $tableName = '{{%settings}}';
+    protected $tableName = 'settings';
 
-    public function get_settings($keys = '')
+    public function get_settings($keys = [])
     {
-        if ($keys) {
-            $keys = $this->base->implode($keys);
-            $sqladd = "k IN ($keys)";
-        } else {
-            $sqladd = '1';
-        }
         
-        $arr = $this->db->fetch_all("SELECT * FROM {{%settings}} WHERE $sqladd");
-        if ($arr) {
-            foreach ($arr as $k => $v) {
-                $arr[$v['k']] = $v['v'];
-                unset($arr[$k]);
-            }
-        }
-        return $arr;
+        return $this->findAll($keys ? ['k' => ['in', $keys]] : [], '*', 'k');
     }
 }
