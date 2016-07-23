@@ -2,18 +2,18 @@
 
 namespace uc\server\app\model;
 
-use uc\server\app\base\Model;
+use uc\server\Table;
 
 /**
  * 应用模型
  */
-class App extends Model
+class App extends Table
 {
-    protected $tableName = '{{%applications}}';
+    protected $name = 'applications';
 
-    public function get_apps($col = '*', $where = '')
+    public function get_apps($col = '*', $where = [])
     {
-        $arr = $this->db->fetch_all("SELECT $col FROM {{%applications}}" . ($where ? ' WHERE ' . $where : ''), 'appid');
+        $arr = $this->findAll($where, $col, 'appid');
         foreach ($arr as $k => $v) {
             isset($v['extra']) && ! empty($v['extra']) && $v['extra'] = unserialize($v['extra']);
             if ($tmp = $this->base->authcode($v['authkey'], 'DECODE', UC_MYKEY)) {
@@ -24,10 +24,9 @@ class App extends Model
         return $arr;
     }
 
-    public function get_app_by_appid($appid, $includecert = FALSE)
+    public function get_app_by_appid(int $appid, bool $includecert = FALSE)
     {
-        $appid = intval($appid);
-        $arr = $this->db->fetch_first("SELECT * FROM {{%applications}} WHERE appid='$appid'");
+        $arr = $this->find(['appid' => $appid]);
         $arr['extra'] = unserialize($arr['extra']);
         if ($tmp = $this->base->authcode($arr['authkey'], 'DECODE', UC_MYKEY)) {
             $arr['authkey'] = $tmp;
