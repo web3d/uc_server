@@ -104,7 +104,6 @@ class Control
     private function init_db()
     {
         $this->db = \uc\server\Db::instance();
-        //$this->db->connect(UC_DBHOST, UC_DBUSER, UC_DBPW, UC_DBNAME, UC_DBCHARSET, UC_DBCONNECT, UC_DBTABLEPRE);
     }
 
     private function init_app()
@@ -167,8 +166,6 @@ class Control
 
     public function load($model, $base = NULL, $release = '')
     {
-        global $_ENV;
-        
         $base = $base ? $base : $this;
         if (empty($_ENV[$model])) {
             $class = '\\uc\\server\\app\\model\\' . ucwords($model);
