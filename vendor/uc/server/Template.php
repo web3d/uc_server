@@ -195,8 +195,12 @@ class Template
         return ! empty($this->languages[$k]) ? $this->languages[$k] : "{ $k }";
     }
 
-    private function _transsid($url, $tag = '', $wml = 0)
+    private function _transsid(array $matches)
     {
+        list($_, $s1, $s2, $url) = $matches;
+        $tag = "<a{$s1}href={$s2}";
+        $wmd = 0;
+        
         $sid = $this->sid;
         $tag = stripslashes($tag);
         if (! $tag || (! preg_match("/^(http:\/\/|mailto:|#|javascript)/i", $url) && ! strpos($url, 'sid='))) {
@@ -213,17 +217,22 @@ class Template
 
     public function __destruct()
     {
-        if (getgpc('sid', 'C')) {}
+        if (getgpc('sid', 'C')) {
+            //TODO
+        }
         $sid = rawurlencode($this->sid);
-        $searcharray = array(
-            "/\<a(\s*[^\>]+\s*)href\=([\"|\']?)([^\"\'\s]+)/ies",
-            "/(\<form.+?\>)/is"
+        
+        $content = preg_replace_callback(
+                "/\<a(\s*[^\>]+\s*)href\=([\"|\']?)([^\"\'\s]+)/is", 
+                [$this, '_transsid'],
+                ob_get_contents()
         );
-        $replacearray = array(
-            "\$this->_transsid('\\3','<a\\1href=\\2')",
-            "\\1\n<input type=\"hidden\" name=\"sid\" value=\"" . rawurldecode(rawurldecode(rawurldecode($sid))) . "\" />"
+        $content = preg_replace(
+                "/(\<form.+?\>)/is", 
+                "\\1\n<input type=\"hidden\" name=\"sid\" value=\"" 
+                    . rawurldecode(rawurldecode(rawurldecode($sid))) . "\" />", 
+                $content
         );
-        $content = preg_replace($searcharray, $replacearray, ob_get_contents());
         ob_end_clean();
         echo $content;
     }
