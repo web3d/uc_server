@@ -5,10 +5,9 @@ namespace uc\server;
 use ucs\db\Query;
 
 /**
- * 数据单表模型,
+ * 数据库单表操作层,特性:
+ * 
  * 1. 封装常用表操作方法
- * 2. 数据校验
- * 3. 缓存
  */
 class Table extends Query
 {
@@ -17,12 +16,6 @@ class Table extends Query
      * @var \ucs\db\Connection 新的db连接对象
      */
     protected $conn;
-    
-    /**
-     *
-     * @var \ucs\db\Command 命令执行工具 
-     */
-    protected $cmd;
     
     /**
      *
@@ -59,8 +52,6 @@ class Table extends Query
         $this->initCompat($base);
         
         $this->initConnection();
-        
-        $this->cmd = $this->conn->createCommand();
         
         $this->from($this->getName());
     }
@@ -114,7 +105,7 @@ class Table extends Query
     {
         return $this->select($fields)
                 ->where($condition)
-                ->createCommand($this->conn)
+                ->createCommand()
                 ->queryOne();
     }
     
@@ -139,7 +130,7 @@ class Table extends Query
                 ->offset($offset)
                 ->limit($limit)
                 ->indexBy($key)
-                ->createCommand($this->conn)
+                ->createCommand()
                 ->queryAll();
         return $rows;
     }
@@ -155,7 +146,7 @@ class Table extends Query
      */
     public function insert($columns)
     {
-        $this->cmd->insert($this->getName(), $columns)->execute();
+        $this->createCommand()->insert($this->getName(), $columns)->execute();
         return $this->conn->getLastInsertID();
     }
     
@@ -168,7 +159,7 @@ class Table extends Query
      */
     public function update(array $columns, $condition)
     {
-        return $this->cmd
+        return $this->createCommand()
                 ->update($this->getName(), $columns, $condition)
                 ->execute();
     }
@@ -181,9 +172,19 @@ class Table extends Query
      */
     public function delete($condition, array $params = [])
     {
-        return $this->cmd
+        return $this->createCommand()
                 ->delete($this->getName(), $condition, $params)
                 ->execute();
+    }
+    
+    /**
+     * 
+     * @param \ucs\db\Connection $db
+     * @return \ucs\db\Command
+     */
+    public function createCommand($db = null)
+    {
+        return parent::createCommand((null == $db) ? $this->conn : $db);
     }
 }
 
