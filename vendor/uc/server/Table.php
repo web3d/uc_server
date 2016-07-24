@@ -14,7 +14,7 @@ class Table extends Query
 {
     /**
      *
-     * @var \ucs\db\Connection 
+     * @var \ucs\db\Connection 新的db连接对象
      */
     protected $conn;
     
@@ -38,28 +38,41 @@ class Table extends Query
     
     /**
      *
-     * @var Control 
+     * @var Control 兼容老的model过渡处理
      */
     protected $base;
     
     /**
      *
-     * @var Db 
+     * @var Db 兼容老的db连接对象
      */
     protected $db;
 
     /**
-     * 构造函数
-     * @param string $config db连接配置
-     * @param string $conn db连接实例名称 默认 'db'
+     * 构造函数 默认提前执行了from当前定义的table的方法,便于简化查询语句
+     * @param Control $base 为兼容替换老的db对象,暂时这样定义
      */
     public function __construct(&$base)
     {
         parent::__construct();
         
+        $this->initCompat($base);
+        
+        $this->initConnection();
+        
+        $this->cmd = $this->conn->createCommand();
+        
+        $this->from($this->getName());
+    }
+    
+    private function initCompat(&$base)
+    {
         $this->base = $base;
         $this->db = $this->base->db;
-        
+    }
+    
+    private function initConnection()
+    {
         $conn = 'db';
 
         //利用Yii的依赖注入容器创建db连接实例
@@ -75,9 +88,6 @@ class Table extends Query
         }
 
         $this->conn = \Uii::$container->get($conn);
-        
-        $this->cmd = $this->conn->createCommand();
-        
     }
     
     /**
@@ -97,12 +107,12 @@ class Table extends Query
      * 'type' => 2,
      * 'id' => [4, 8, 15, 16, 23, 42], 
      * ]
+     * @param string $fields 指定要返回的字段
      * @return array
      */
-    public function find($condition, $field = '*')
+    public function find($condition, $fields = '*')
     {
-        return $this->select($field)
-                ->from($this->getName())
+        return $this->select($fields)
                 ->where($condition)
                 ->createCommand($this->conn)
                 ->queryOne();
@@ -116,16 +126,15 @@ class Table extends Query
      * 'type' => 2,
      * 'id' => [4, 8, 15, 16, 23, 42], 
      * ]
-     * @param string $field
+     * @param string $fields
      * @param string $key
      * @param int $offset
      * @param int $limit
      * @return array
      */
-    public function findAll($condition, $field = '*', $key = '', $offset = -1, $limit = -1)
+    public function findAll($condition, $fields = '*', $key = '', $offset = -1, $limit = -1)
     {
-        $rows = $this->select($field)
-                ->from($this->getName())
+        $rows = $this->select($fields)
                 ->where($condition)
                 ->offset($offset)
                 ->limit($limit)
