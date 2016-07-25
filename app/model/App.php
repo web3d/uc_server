@@ -11,7 +11,7 @@ class App extends Table
 {
     protected $name = 'applications';
 
-    public function get_apps($col = '*', $where = [])
+    public function get_apps(string $col = '*', array $where = [])
     {
         $arr = $this->findAll($where, $col, 'appid');
         foreach ($arr as $k => $v) {
@@ -42,19 +42,21 @@ class App extends Table
         return $arr;
     }
 
-    public function delete_apps($appids)
+    public function delete_apps(array $appids)
     {
-        $appids = $this->base->implode($appids);
-        $this->db->execute("DELETE FROM {{%applications}} WHERE appid IN ($appids)");
-        return $this->db->affected_rows();
+        return $this->delete(['appid' => $appids]);
     }
 
     public function alter_app_table($appid, $operation = 'ADD')
     {
         if ($operation == 'ADD') {
-            $this->db->execute("ALTER TABLE {{%notelist}} ADD COLUMN app$appid tinyint NOT NULL", 'SILENT');
+            $this->getCommand()
+                    ->addColumn('{{%notelist}}', "app$appid", 'tinyint NOT NULL')
+                    ->execute();
         } else {
-            $this->db->execute("ALTER TABLE {{%notelist}} DROP COLUMN app$appid", 'SILENT');
+            $this->getCommand()
+                    ->dropColumn('{{%notelist}}', "app$appid")
+                    ->execute();
         }
     }
 
