@@ -128,7 +128,7 @@ abstract class Schema extends Object
 
         if ($db->enableSchemaCache && !in_array($name, $db->schemaCacheExclude, true)) {
             /* @var $cache Cache */
-            $cache = is_string($db->schemaCache) ? Uii::$app->get($db->schemaCache, false) : $db->schemaCache;
+            $cache = is_string($db->schemaCache) ? Uii::$container->get($db->schemaCache, false) : $db->schemaCache;
             if ($cache instanceof Cache) {
                 $key = $this->getCacheKey($name);
                 if ($refresh || ($table = $cache->get($key)) === false) {
@@ -275,7 +275,7 @@ abstract class Schema extends Object
     public function refresh()
     {
         /* @var $cache Cache */
-        $cache = is_string($this->db->schemaCache) ? Uii::$app->get($this->db->schemaCache, false) : $this->db->schemaCache;
+        $cache = is_string($this->db->schemaCache) ? Uii::$container->get($this->db->schemaCache, false) : $this->db->schemaCache;
         if ($this->db->enableSchemaCache && $cache instanceof Cache) {
             TagDependency::invalidate($cache, $this->getCacheTag());
         }
@@ -295,7 +295,7 @@ abstract class Schema extends Object
         unset($this->_tables[$name]);
         $this->_tableNames = [];
         /* @var $cache Cache */
-        $cache = is_string($this->db->schemaCache) ? Uii::$app->get($this->db->schemaCache, false) : $this->db->schemaCache;
+        $cache = is_string($this->db->schemaCache) ? Uii::$container->get($this->db->schemaCache, false) : $this->db->schemaCache;
         if ($this->db->enableSchemaCache && $cache instanceof Cache) {
             $cache->delete($this->getCacheKey($name));
         }

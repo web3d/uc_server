@@ -501,8 +501,8 @@ class Connection extends Component
         }
 
         if ($duration === 0 || $duration > 0) {
-            if (is_string($this->queryCache) && Uii::$app) {
-                $cache = Uii::$app->get($this->queryCache, false);
+            if (is_string($this->queryCache)) {
+                $cache = Uii::$container->get($this->queryCache, false);
             } else {
                 $cache = $this->queryCache;
             }
@@ -928,7 +928,7 @@ class Connection extends Component
             $sharedConfig['class'] = get_class($this);
         }
 
-        $cache = is_string($this->serverStatusCache) ? Uii::$app->get($this->serverStatusCache, false) : $this->serverStatusCache;
+        $cache = is_string($this->serverStatusCache) ? Uii::$container->get($this->serverStatusCache, false) : $this->serverStatusCache;
 
         shuffle($pool);
 

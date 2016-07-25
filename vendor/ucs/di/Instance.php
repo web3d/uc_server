@@ -151,10 +151,7 @@ class Instance
         if ($container) {
             return $container->get($this->id);
         }
-        if (Uii::$app && Uii::$app->has($this->id)) {
-            return Uii::$app->get($this->id);
-        } else {
-            return Uii::$container->get($this->id);
-        }
+        
+        return Uii::$container->get($this->id);
     }
 }
