@@ -19,6 +19,12 @@ class Table extends Query
     
     /**
      *
+     * @var ucs\db\Command db对应的command对象 
+     */
+    protected $command;
+
+    /**
+     *
      * @var string 表名
      */
     protected $name;
@@ -45,7 +51,7 @@ class Table extends Query
      * 构造函数 默认提前执行了from当前定义的table的方法,便于简化查询语句
      * @param Control $base 为兼容替换老的db对象,暂时这样定义
      */
-    public function __construct(&$base)
+    public function __construct(ControlInterface &$base)
     {
         parent::__construct();
         
@@ -54,9 +60,11 @@ class Table extends Query
         $this->initConnection();
         
         $this->from($this->getName());
+        
+        $this->getCommand();
     }
     
-    private function initCompat(&$base)
+    private function initCompat(ControlInterface &$base)
     {
         $this->base = $base;
         $this->db = $this->base->db;
@@ -101,12 +109,11 @@ class Table extends Query
      * @param string $fields 指定要返回的字段
      * @return array
      */
-    public function find($condition, $fields = '*')
+    public function find(array $condition, string $fields = '*')
     {
         return $this->select($fields)
                 ->where($condition)
-                ->createCommand()
-                ->queryOne();
+                ->one();
     }
     
     /**
@@ -123,15 +130,14 @@ class Table extends Query
      * @param int $limit
      * @return array
      */
-    public function findAll($condition, $fields = '*', $key = '', $offset = -1, $limit = -1)
+    public function findAll(array $condition, string $fields = '*', string $key = '', int $offset = -1, int $limit = -1)
     {
         $rows = $this->select($fields)
                 ->where($condition)
                 ->offset($offset)
                 ->limit($limit)
                 ->indexBy($key)
-                ->createCommand()
-                ->queryAll();
+                ->all();
         return $rows;
     }
     
@@ -144,7 +150,7 @@ class Table extends Query
      * @return int ID
      * @see \ucs\db\Command::insert
      */
-    public function insert($columns)
+    public function insert(array $columns)
     {
         $this->createCommand()->insert($this->getName(), $columns)->execute();
         return $this->conn->getLastInsertID();
@@ -157,7 +163,7 @@ class Table extends Query
      * @param array $params 绑定条件中的参数值
      * @return int
      */
-    public function update(array $columns, $condition)
+    public function update(array $columns, array $condition)
     {
         return $this->createCommand()
                 ->update($this->getName(), $columns, $condition)
@@ -166,11 +172,11 @@ class Table extends Query
     
     /**
      * 按条件删除
-     * @param array|string $condition
+     * @param array $condition
      * @param array $params
      * @return int
      */
-    public function delete($condition, array $params = [])
+    public function delete(array $condition, array $params = [])
     {
         return $this->createCommand()
                 ->delete($this->getName(), $condition, $params)
@@ -178,13 +184,34 @@ class Table extends Query
     }
     
     /**
-     * 
+     * 重载,传递Connection对象
      * @param \ucs\db\Connection $db
      * @return \ucs\db\Command
      */
-    public function createCommand($db = null)
+    public function createCommand(\ucs\db\Connection $db = null)
+    {        
+        if ($db === null) {
+            $db = $this->conn;
+        }
+        list ($sql, $params) = $db->getQueryBuilder()->build($this);
+        
+        $this->getCommand()->setSql($sql);
+        $this->getCommand()->bindValues($params);
+
+        return $this->getCommand();
+    }
+    
+    /**
+     * 获取command对象
+     * @return \ucs\db\Command
+     */
+    public function getCommand()
     {
-        return parent::createCommand((null == $db) ? $this->conn : $db);
+        if (!$this->command instanceof \ucs\db\Command) {
+            $this->command = $this->conn->createCommand();
+        }
+        
+        return $this->command;
     }
 }
 

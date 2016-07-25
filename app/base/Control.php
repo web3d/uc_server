@@ -2,7 +2,7 @@
 
 namespace uc\server\app\base;
 
-class Control
+class Control implements \uc\server\ControlInterface
 {
 
     /**
@@ -232,7 +232,7 @@ class Control
         return uc_gmdate($time, $type, $this->settings['dateformat'], $this->settings['timeformat'], $this->settings['timeoffset']);
     }
 
-    protected function implode($arr)
+    public function implode($arr)
     {
         return "'" . implode("','", (array) $arr) . "'";
     }
