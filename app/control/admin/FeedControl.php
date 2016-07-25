@@ -7,11 +7,9 @@ use uc\server\app\base\BackendControl as Control;
 class FeedControl extends Control
 {
 
-    var $apps = array();
+    public $apps = array();
 
-    var $operations = array();
-
-    function __construct()
+    public function __construct()
     {
         parent::__construct();
         if (! $this->user['isfounder'] && ! $this->user['allowadminnote']) {
@@ -22,7 +20,7 @@ class FeedControl extends Control
         $this->check_priv();
     }
 
-    function onls()
+    public function onls()
     {
         $page = getgpc('page');
         $delete = getgpc('delete', 'P');

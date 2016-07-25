@@ -2,24 +2,23 @@
 
 namespace uc\server\app\model;
 
-use uc\server\app\base\Model;
+use uc\server\Table;
 use uc\server\Misc;
 
-class Feed extends Model
+class Feed extends Table
 {
 
-    protected $tableName = '{{%feeds}}';
+    protected $name = 'feeds';
 
-    function get_total_num()
+    public function get_total_num()
     {
-        $data = $this->db->result_first("SELECT COUNT(*) FROM {{%feeds}}");
-        return $data;
+        return $this->count();
     }
 
-    function get_list($page, $ppp, $totalnum)
+    public function get_list($page, $ppp, $totalnum)
     {
         $start = $this->base->page_get_start($page, $ppp, $totalnum);
-        $data = $this->db->fetch_all("SELECT * FROM {{%feeds}} LIMIT $start, $ppp");
+        $data = $this->findAll([], '*', '', $start, $ppp);
         
         foreach ((array) $data as $k => $v) {
             $searchs = $replaces = array();
