@@ -38,6 +38,15 @@ class BackendControl extends Control
             $this->check_priv();
         }
         
+        include UC_APPDIR . '/view/default/admin.lang.php';
+        if ($lang) {
+            $this->lang = array_merge($this->lang, $lang);
+        }
+        include UC_APPDIR . '/view/default/templates.lang.php';
+        if ($languages) {
+            $this->lang = array_merge($this->lang, $languages);
+        }
+        
         $this->view->sid = $this->sid;
         if ($this->cookie_status) {
             $this->setcookie('sid', $this->sid, 86400);

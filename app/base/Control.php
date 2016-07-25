@@ -68,7 +68,7 @@ class Control implements \uc\server\ControlInterface
         $_GET['page'] = max(1, intval(getgpc('page')));
         
         include_once UC_APPDIR . '/view/default/main.lang.php';
-        $this->lang = &$lang;
+        $this->lang = $lang;
     }
 
     private function init_cache()
@@ -203,8 +203,11 @@ class Control implements \uc\server\ControlInterface
     protected function message($message, $redirect = '', $type = 0, $vars =[])
     {
         include UC_APPDIR . '/view/default/messages.lang.php';
-        if (isset($lang[$message])) {
-            $message = str_replace(array_keys($vars), array_values($vars), $lang[$message]);
+        if ($lang) {
+            $this->lang = array_merge($this->lang, $lang);
+        }
+        if (isset($this->lang[$message])) {
+            $message = str_replace(array_keys($vars), array_values($vars), $this->lang[$message]);
         }
         $this->view->assign('message', $message);
         if (! strpos($redirect, 'sid=') && (false === strpos($redirect, 'http://'))) {
