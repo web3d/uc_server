@@ -2,31 +2,47 @@
 
 namespace uc\server\app\model;
 
-use uc\server\app\base\Model;
+use uc\server\Table;
 use uc\server\Misc;
 
-class Tag extends Model
+class Tag extends Table
 {
 
-    protected $tableName = '{{%tags}}';
+    protected $name = 'tags';
 
-    public function get_tag_by_name($tagname)
+    /**
+     * 根据名称查找所以匹配的标签
+     * @param string $tagname
+     * @return array
+     */
+    public function get_tag_by_name(string $tagname)
     {
-        $arr = $this->db->fetch_all("SELECT * FROM {{%tags}} WHERE tagname='$tagname'");
-        return $arr;
+        return $this->findAll(['tagname' => $tagname]);
     }
 
-    public function get_template($appid)
+    /**
+     * 找出一条应用数据中的标签模板设置内容
+     * @param int $appid
+     * @return string
+     */
+    public function get_template(int $appid)
     {
-        $result = $this->db->result_first("SELECT tagtemplates FROM {{%applications}} WHERE appid='$appid'");
+        $result = $this
+                ->select('tagtemplates')
+                ->from('{{%applications}}')
+                ->where(['appid' => $appid])
+                ->scalar();
         return $result;
     }
 
-    public function updatedata($appid, $data)
+    /**
+     * 更新数据
+     * @param int $appid
+     * @param string $data
+     */
+    public function updatedata(int $appid, string $data)
     {
-        $appid = intval($appid);
         $data = xml_unserialize($data);
-        $this->base->load('app');
         $data[0] = addslashes($data[0]);
         $datanew = array();
         if (is_array($data[1])) {
@@ -34,25 +50,27 @@ class Tag extends Model
                 $datanew[] = Misc::array2string($r);
             }
         }
-        $tmp = $_ENV['app']->get_apps('type', ['appid' => $appid]);
+
+        $tmp = $this->base->load('app')->get_apps('type', ['appid' => $appid]);
         $datanew = addslashes($tmp[0]['type'] . "\t" . implode("\t", $datanew));
         if (! empty($data[0])) {
-            $return = $this->db->result_first("SELECT count(*) FROM {{%tags}} WHERE tagname='$data[0]' AND appid='$appid'");
-            if ($return) {
-                $this->db->execute("UPDATE {{%tags}} SET data='$datanew', expiration='" . $this->base->time . "' WHERE tagname='$data[0]' AND appid='$appid'");
-            } else {
-                $this->db->execute("INSERT INTO {{%tags}} (tagname, appid, data, expiration) VALUES ('$data[0]', '$appid', '$datanew', '" . $this->base->time . "')");
-            }
+            $this->updateOrInsert(
+                ['appid' => $appid, 'tagname' => $data[0]], 
+                ['data' => $datanew, 'expiration' => $this->base->time]
+            );
         }
     }
 
-    public function formatcache($appid, $tagname)
+    /**
+     * 格式化缓存?
+     * @param int $appid
+     * @param string $tagname
+     */
+    public function formatcache(int $appid, string $tagname)
     {
-        $return = $this->db->result_first("SELECT count(*) FROM {{%tags}} WHERE tagname='$tagname' AND appid='$appid'");
-        if ($return) {
-            $this->db->execute("UPDATE {{%tags}} SET expiration='0' WHERE tagname='$tagname' AND appid='$appid'");
-        } else {
-            $this->db->execute("INSERT INTO {{%tags}} (tagname, appid, expiration) VALUES ('$tagname', '$appid', '0')");
-        }
+        $this->updateOrInsert(
+                ['appid' => $appid, 'tagname' => $tagname], 
+                ['expiration' => 0]
+        );
     }
 }
