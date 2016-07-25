@@ -184,16 +184,13 @@ class Table extends Query
     }
     
     /**
-     * 重载,传递Connection对象
+     * 重载,强制传递当前Connection对象
      * @param \ucs\db\Connection $db
      * @return \ucs\db\Command
      */
-    public function createCommand(\ucs\db\Connection $db = null)
-    {        
-        if ($db === null) {
-            $db = $this->conn;
-        }
-        list ($sql, $params) = $db->getQueryBuilder()->build($this);
+    public function createCommand($db = null)
+    {
+        list ($sql, $params) = $this->conn->getQueryBuilder()->build($this);
         
         $this->getCommand()->setSql($sql);
         $this->getCommand()->bindValues($params);
