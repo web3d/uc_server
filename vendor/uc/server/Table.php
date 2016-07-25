@@ -112,6 +112,7 @@ class Table extends Query
     public function find(array $condition, string $fields = '*')
     {
         return $this->select($fields)
+                ->from($this->getName())
                 ->where($condition)
                 ->one();
     }
@@ -133,6 +134,7 @@ class Table extends Query
     public function findAll(array $condition, string $fields = '*', string $key = '', int $offset = -1, int $limit = -1)
     {
         $rows = $this->select($fields)
+                ->from($this->getName())
                 ->where($condition)
                 ->offset($offset)
                 ->limit($limit)
@@ -168,6 +170,21 @@ class Table extends Query
         return $this->createCommand()
                 ->update($this->getName(), $columns, $condition)
                 ->execute();
+    }
+    
+    /**
+     * 
+     * @param array $condition
+     * @param array $columns
+     * @return int
+     */
+    public function updateOrInsert(array $condition, array $columns)
+    {
+        if ($this->from($this->getName())->where($condition)->exists()) {
+            return $this->update($columns, $condition);
+        } else {
+            return $this->insert(array_merge($condition, $columns));
+        }
     }
     
     /**
