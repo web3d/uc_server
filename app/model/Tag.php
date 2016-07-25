@@ -3,6 +3,7 @@
 namespace uc\server\app\model;
 
 use uc\server\app\base\Model;
+use uc\server\Misc;
 
 class Tag extends Model
 {
@@ -30,7 +31,7 @@ class Tag extends Model
         $datanew = array();
         if (is_array($data[1])) {
             foreach ($data[1] as $r) {
-                $datanew[] = $_ENV['misc']->array2string($r);
+                $datanew[] = Misc::array2string($r);
             }
         }
         $tmp = $_ENV['app']->get_apps('type', ['appid' => $appid]);

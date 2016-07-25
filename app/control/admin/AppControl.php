@@ -3,6 +3,7 @@
 namespace uc\server\app\control\admin;
 
 use uc\server\app\base\BackendControl as Control;
+use uc\server\HTTPClient;
 
 class AppControl extends Control
 {
@@ -15,7 +16,6 @@ class AppControl extends Control
             $this->message('no_permission_for_this_module');
         }
         $this->load('app');
-        $this->load('misc');
     }
 
     function onls()
@@ -89,10 +89,10 @@ class AppControl extends Control
             }
             $tagtemplates = $this->serialize($tagtemplates, 1);
             
-            if (! $_ENV['misc']->check_url($_POST['url'])) {
+            if (!HTTPClient::check_url($_POST['url'])) {
                 $this->message('app_add_url_invalid', 'BACK');
             }
-            if (! empty($_POST['ip']) && ! $_ENV['misc']->check_ip($_POST['ip'])) {
+            if (! empty($_POST['ip']) && ! HTTPClient::check_ip($_POST['ip'])) {
                 $this->message('app_add_ip_invalid', 'BACK');
             }
             $app = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . "applications WHERE name='$name'");

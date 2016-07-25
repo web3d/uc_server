@@ -3,6 +3,7 @@
 namespace uc\server\app\control;
 
 use uc\server\app\base\Control;
+use uc\server\Misc;
 
 class FeedControl extends Control
 {
@@ -15,13 +16,12 @@ class FeedControl extends Control
 
     function onadd()
     {
-        $this->load('misc');
         $appid = intval($this->input('appid'));
         $icon = $this->input('icon');
         $uid = intval($this->input('uid'));
         $username = $this->input('username');
-        $body_data = $_ENV['misc']->array2string($this->input('body_data'));
-        $title_data = $_ENV['misc']->array2string($this->input('title_data'));
+        $body_data = Misc::array2string($this->input('body_data'));
+        $title_data = Misc::array2string($this->input('title_data'));
         
         $title_template = $this->_parsetemplate($this->input('title_template'));
         $body_template = $this->_parsetemplate($this->input('body_template'));
@@ -57,15 +57,14 @@ class FeedControl extends Control
 
     function onget()
     {
-        $this->load('misc');
         $limit = intval($this->input('limit'));
         $delete = $this->input('delete');
         $feedlist = $this->db->fetch_all("SELECT * FROM " . UC_DBTABLEPRE . "feeds ORDER BY feedid DESC LIMIT $limit");
         if ($feedlist) {
             $maxfeedid = $feedlist[0]['feedid'];
             foreach ($feedlist as $key => $feed) {
-                $feed['body_data'] = $_ENV['misc']->string2array($feed['body_data']);
-                $feed['title_data'] = $_ENV['misc']->string2array($feed['title_data']);
+                $feed['body_data'] = Misc::string2array($feed['body_data']);
+                $feed['title_data'] = Misc::string2array($feed['title_data']);
                 $feedlist[$key] = $feed;
             }
         }

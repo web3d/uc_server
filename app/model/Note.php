@@ -3,6 +3,7 @@
 namespace uc\server\app\model;
 
 use uc\server\app\base\Model;
+use uc\server\HTTPClient;
 
 define('UC_NOTE_REPEAT', 2);
 define('UC_NOTE_TIMEOUT', 15);
@@ -182,7 +183,6 @@ class Note extends Model
         if ($noteid) {
             $note = $this->_get_note_by_id($noteid);
         }
-        $this->base->load('misc');
         $apifilename = isset($app['apifilename']) && $app['apifilename'] ? $app['apifilename'] : 'uc.php';
         if ($app['extra']['apppath'] && @include_once $app['extra']['apppath'] . './api/' . $apifilename) {
             $uc_note = new uc_note();
@@ -202,7 +202,7 @@ class Note extends Model
                 "\n",
                 "\r"
             ), '', $note['postdata']);
-            $response = trim($_ENV['misc']->dfopen2($url, 0, $note['postdata'], '', 1, $app['ip'], UC_NOTE_TIMEOUT, TRUE));
+            $response = trim(HTTPClient::dfopen2($url, 0, $note['postdata'], '', 1, $app['ip'], UC_NOTE_TIMEOUT, TRUE));
         }
         
         $returnsucceed = $response != '' && ($response == 1 || is_array(xml_unserialize($response)));

@@ -3,6 +3,7 @@
 namespace uc\server\app\control;
 
 use uc\server\app\base\Control;
+use uc\server\HTTPClient;
 
 define('UC_USER_CHECK_USERNAME_FAILED', - 1);
 define('UC_USER_USERNAME_BADWORD', - 2);
@@ -316,7 +317,6 @@ class UserControl extends Control
         $uid = $this->input('uid');
         $credit = $this->input('credit');
         $this->load('note');
-        $this->load('misc');
         $app = $this->cache['apps'][$appid];
         $apifilename = isset($app['apifilename']) && $app['apifilename'] ? $app['apifilename'] : 'uc.php';
         if ($app['extra']['apppath'] && @include $app['extra']['apppath'] . './api/' . $apifilename) {
@@ -327,7 +327,7 @@ class UserControl extends Control
             ), '');
         } else {
             $url = $_ENV['note']->get_url_code('getcredit', "uid=$uid&credit=$credit", $appid);
-            return $_ENV['misc']->dfopen($url, 0, '', '', 1, $app['ip'], UC_NOTE_TIMEOUT);
+            return HTTPClient::dfopen($url, 0, '', '', 1, $app['ip'], UC_NOTE_TIMEOUT);
         }
     }
 

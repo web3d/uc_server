@@ -3,6 +3,7 @@
 namespace uc\server\app\control\admin;
 
 use uc\server\app\base\BackendControl as Control;
+use uc\server\HTTPClient;
 
 class DomainControl extends Control
 {
@@ -15,7 +16,6 @@ class DomainControl extends Control
             $this->message('no_permission_for_this_module');
         }
         $this->load('domain');
-        $this->load('misc');
         $this->check_priv();
     }
 
@@ -23,7 +23,7 @@ class DomainControl extends Control
     {
         $status = 0;
         if (@$_POST['domainnew']) {
-            if (! $_ENV['misc']->check_ip($_POST['ipnew'])) {
+            if (! HTTPClient::check_ip($_POST['ipnew'])) {
                 $this->message('app_add_ip_invalid', 'BACK');
             }
             $_ENV['domain']->add_domain($_POST['domainnew'], $_POST['ipnew']);
@@ -32,7 +32,7 @@ class DomainControl extends Control
         }
         if (@$_POST['domain']) {
             foreach ($_POST['domain'] as $id => $arr) {
-                if (! $_ENV['misc']->check_ip($_POST['ip'][$id])) {
+                if (! HTTPClient::check_ip($_POST['ip'][$id])) {
                     $this->message('app_add_ip_invalid', 'BACK');
                 }
                 $_ENV['domain']->update_domain($_POST['domain'][$id], $_POST['ip'][$id], $id);

@@ -3,6 +3,7 @@
 namespace uc\server\app\control\admin;
 
 use uc\server\app\base\BackendControl as Control;
+use uc\server\HTTPClient;
 
 class CreditControl extends Control
 {
@@ -115,7 +116,6 @@ class CreditControl extends Control
     function onsync()
     {
         $this->load('note');
-        $this->load('misc');
         $this->load('cache');
         $step = intval(getgpc('step', 'G'));
         if (! $step && is_array($this->cache['apps'])) {
@@ -136,7 +136,7 @@ class CreditControl extends Control
                     $data = trim($uc_note->getcreditsettings('', ''));
                 } else {
                     $url = $_ENV['note']->get_url_code('getcreditsettings', '', $appid);
-                    $data = trim($_ENV['misc']->dfopen($url, 0, '', '', 1));
+                    $data = trim(HTTPClient::dfopen($url, 0, '', '', 1));
                 }
                 if (! $testrelease) {
                     if (! ($data = $this->sync_unserialize($data, ''))) {

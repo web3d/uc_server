@@ -18,7 +18,6 @@ class FeedControl extends Control
             $this->message('no_permission_for_this_module');
         }
         $this->load('feed');
-        $this->load('misc');
         $this->apps = $this->cache['apps'];
         $this->check_priv();
     }

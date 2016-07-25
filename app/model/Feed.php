@@ -3,6 +3,7 @@
 namespace uc\server\app\model;
 
 use uc\server\app\base\Model;
+use uc\server\Misc;
 
 class Feed extends Model
 {
@@ -22,7 +23,7 @@ class Feed extends Model
         
         foreach ((array) $data as $k => $v) {
             $searchs = $replaces = array();
-            $title_data = $_ENV['misc']->string2array($v['title_data']);
+            $title_data = Misc::string2array($v['title_data']);
             foreach (array_keys($title_data) as $key) {
                 $searchs[] = '{' . $key . '}';
                 $replaces[] = $title_data[$key];

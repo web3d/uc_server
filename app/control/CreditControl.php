@@ -3,6 +3,7 @@
 namespace uc\server\app\control;
 
 use uc\server\app\base\Control;
+use uc\server\HTTPClient;
 
 class CreditControl extends Control
 {
@@ -12,7 +13,6 @@ class CreditControl extends Control
         parent::__construct();
         $this->init_input();
         $this->load('note');
-        $this->load('misc');
     }
 
     function onrequest()
@@ -36,7 +36,7 @@ class CreditControl extends Control
                 ), '');
             } else {
                 $url = $_ENV['note']->get_url_code('updatecredit', "uid=$uid&credit=$to&amount=$amount", $toappid);
-                $status = trim($_ENV['misc']->dfopen($url, 0, '', '', 1, $toapp['ip'], UC_NOTE_TIMEOUT));
+                $status = trim(HTTPClient::dfopen($url, 0, '', '', 1, $toapp['ip'], UC_NOTE_TIMEOUT));
             }
         }
         echo $status ? 1 : 0;

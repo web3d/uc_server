@@ -3,6 +3,7 @@
 namespace uc\server\app\control\admin;
 
 use uc\server\app\base\BackendControl as Control;
+use uc\server\HTTPClient;
 
 class DbControl extends Control
 {
@@ -21,7 +22,6 @@ class DbControl extends Control
             $this->message('no_permission_for_this_module');
         }
         $this->check_priv();
-        $this->load('misc');
     }
 
     function onls()
@@ -76,7 +76,7 @@ class DbControl extends Control
             }
             $code = $this->authcode('&method=ping&dir=' . $dir . '&time=' . time(), 'ENCODE', $app['authkey']);
             $url .= '&code=' . urlencode($code);
-            $res = $_ENV['misc']->dfopen2($url, 0, '', '', 1, $app['ip'], 20, TRUE);
+            $res = HTTPClient::dfopen2($url, 0, '', '', 1, $app['ip'], 20, TRUE);
             if ($res == '1') {
                 $this->message($this->_parent_js($appid, '<img src="static/images/correct.gif" border="0" class="statimg" /><span class="green">' . $this->lang['dumpfile_exists'] . '</span>') . '<script>parent.import_status[' . $appid . ']=true;</script>');
             } else {
@@ -122,7 +122,7 @@ class DbControl extends Control
         if (empty($appid)) {
             $app['ip'] = defined('UC_IP') ? UC_IP : '';
         }
-        $res = $_ENV['misc']->dfopen2($url, 0, '', '', 1, $app['ip'], 20, TRUE);
+        $res = HTTPClient::dfopen2($url, 0, '', '', 1, $app['ip'], 20, TRUE);
         if (empty($res)) {
             $this->message($this->_parent_js($appid, 'db_back_api_url_invalid'));
         }
@@ -163,7 +163,7 @@ class DbControl extends Control
             $appname = $app['name'];
         }
         $url .= '&code=' . urlencode($code);
-        $res = $_ENV['misc']->dfopen2($url, 0, '', '', 1, $app['ip'], 20, TRUE);
+        $res = HTTPClient::dfopen2($url, 0, '', '', 1, $app['ip'], 20, TRUE);
         $next_appid = $this->_next_appid($appid);
         if ($next_appid != $appid) {
             $this->message($this->_parent_js($backupdir, 'delete_dumpfile_redirect', array(

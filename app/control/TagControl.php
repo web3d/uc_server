@@ -3,6 +3,7 @@
 namespace uc\server\app\control;
 
 use uc\server\app\base\Control;
+use uc\server\Misc;
 
 class TagControl extends Control
 {
@@ -12,7 +13,6 @@ class TagControl extends Control
         parent::__construct();
         $this->init_input();
         $this->load('tag');
-        $this->load('misc');
     }
 
     function ongettag()
@@ -40,7 +40,7 @@ class TagControl extends Control
                 $type = $tmp[0];
                 array_shift($tmp);
                 foreach ($tmp as $tmp1) {
-                    $tmp1 != '' && $r[] = $_ENV['misc']->string2array($tmp1);
+                    $tmp1 != '' && $r[] = Misc::string2array($tmp1);
                 }
                 if (in_array($tagdata['appid'], $apparray)) {
                     if ($tagdata['expiration'] > 0 && $this->time - $tagdata['expiration'] > 3600) {

@@ -3,6 +3,7 @@
 namespace uc\server\app\model;
 
 use uc\server\Table;
+use uc\server\HTTPClient;
 
 /**
  * 应用模型
@@ -62,14 +63,13 @@ class App extends Table
 
     public function test_api($url, $ip = '')
     {
-        $this->base->load('misc');
         if (! $ip) {
-            $ip = $_ENV['misc']->get_host_by_url($url);
+            $ip = HTTPClient::get_host_by_url($url);
         }
         
         if ($ip < 0) {
             return FALSE;
         }
-        return $_ENV['misc']->dfopen($url, 0, '', '', 1, $ip);
+        return HTTPClient::dfopen($url, 0, '', '', 1, $ip);
     }
 }
