@@ -19,7 +19,7 @@ class Table extends Query
     
     /**
      *
-     * @var ucs\db\Command db对应的command对象 
+     * @var \ucs\db\Command db对应的command对象 
      */
     protected $command;
 
