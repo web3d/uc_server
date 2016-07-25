@@ -474,6 +474,7 @@ $languages = array(
     'admin_allow_cache' => '允许管理缓存',
     'admin_allow_log' => '允许查看日志',
     'admin_allow_note' => '允许管理数据列表',
+    'admin_privilege_updated' => '权限更新成功',
     'oldpw' => '旧密码',
     'newpw' => '新密码',
     'repeatpw' => '重复新密码',

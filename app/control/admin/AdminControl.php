@@ -6,8 +6,20 @@ use uc\server\app\base\BackendControl as Control;
 
 class AdminControl extends Control
 {
+    
+    protected $msgs = [
+        '1' => 'admin_add_succeed',
+        '-1' => 'admin_add_succeed',
+        '-2' => 'admin_failed',
+        '-3' => 'admin_user_nonexistance',
+        '-4' => 'admin_config_unwritable',
+        '-5' => 'admin_founder_pw_incorrect',
+        '-6' => 'admin_pw_incorrect',
+        '2' => 'admin_founder_pw_modified',
+        '3' => 'admin_privilege_updated'
+    ];
 
-    function __construct()
+    public function __construct()
     {
         parent::__construct();
         $this->load('user');
@@ -17,7 +29,7 @@ class AdminControl extends Control
         }
     }
 
-    function onls()
+    public function onls()
     {
         $status = 0;
         if (! empty($_POST['addname']) && $this->submitcheck()) {
@@ -127,44 +139,40 @@ class AdminControl extends Control
 
     function onedit()
     {
-        $uid = getgpc('uid');
+        $uid = (int) getgpc('uid');
         $status = 0;
+        $admin = $this->load('admin')->find(['uid' => $uid]);
+        
         if ($this->submitcheck()) {
-            $allowadminsetting = getgpc('allowadminsetting', 'P');
-            $allowadminapp = getgpc('allowadminapp', 'P');
-            $allowadminuser = getgpc('allowadminuser', 'P');
-            $allowadminbadword = getgpc('allowadminbadword', 'P');
-            $allowadmintag = getgpc('allowadmintag', 'P');
-            $allowadminpm = getgpc('allowadminpm', 'P');
-            $allowadmincredits = getgpc('allowadmincredits', 'P');
-            $allowadmindomain = getgpc('allowadmindomain', 'P');
-            $allowadmindb = getgpc('allowadmindb', 'P');
-            $allowadminnote = getgpc('allowadminnote', 'P');
-            $allowadmincache = getgpc('allowadmincache', 'P');
-            $allowadminlog = getgpc('allowadminlog', 'P');
-            $this->db->execute("UPDATE " . UC_DBTABLEPRE . "admins SET
-				allowadminsetting='$allowadminsetting',
-				allowadminapp='$allowadminapp',
-				allowadminuser='$allowadminuser',
-				allowadminbadword='$allowadminbadword',
-				allowadmincredits='$allowadmincredits',
-				allowadmintag='$allowadmintag',
-				allowadminpm='$allowadminpm',
-				allowadmindomain='$allowadmindomain',
-				allowadmindb='$allowadmindb',
-				allowadminnote='$allowadminnote',
-				allowadmincache='$allowadmincache',
-				allowadminlog='$allowadminlog'
-				WHERE uid='$uid'");
-            $status = $this->db->errno() ? - 1 : 1;
+            $affected = $this->load('admin')->update(
+                    [
+                        'allowadminsetting' => getgpc('allowadminsetting', 'P'),
+                        'allowadminapp' => getgpc('allowadminapp', 'P'),
+                        'allowadminuser' => getgpc('allowadminuser', 'P'),
+                        'allowadminbadword' => getgpc('allowadminbadword', 'P'),
+                        'allowadmincredits' => getgpc('allowadmincredits', 'P'),
+                        'allowadmintag' => getgpc('allowadmintag', 'P'),
+                        'allowadminpm' => getgpc('allowadminpm', 'P'),
+                        'allowadmindomain' => getgpc('allowadmindomain', 'P'),
+                        'allowadmindb' => getgpc('allowadmindb', 'P'),
+                        'allowadminnote' => getgpc('allowadminnote', 'P'),
+                        'allowadmincache' => getgpc('allowadmincache', 'P'),
+                        'allowadminlog' => getgpc('allowadminlog', 'P')
+                    ],
+                    ['uid' => $uid]
+            );
+            
+            $status = $affected ? 3 : -1;
+                
             $this->writelog('admin_priv_edit', 'username=' . dhtmlspecialchars($admin));
+            
+            $this->message($this->msgs[$status], 'admin.php?m=admin&a=ls');
         }
-        $admin = $this->db->fetch_first("SELECT * FROM " . UC_DBTABLEPRE . "admins WHERE uid='$uid'");
+        
         $this->view->assign('uid', $uid);
         $this->view->assign('admin', $admin);
         $this->view->assign('status', $status);
         $this->view->display('admin_admin');
     }
+    
 }
-
-?>
