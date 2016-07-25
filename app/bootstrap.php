@@ -25,6 +25,16 @@ $loader->register();
 
 require UC_VENDORDIR . '/uc/server/common.php';
 
+require UC_DATADIR . 'config.inc.php';
+
+$cache = 'cache';
+if (!Uii::$container->hasSingleton($cache)) {
+    Uii::$container->setSingleton($cache, [
+        'class' => 'ucs\caching\FileCache',
+        'cachePath' => UC_DATADIR . '/cache'
+    ]);
+}
+
 $_GET = daddslashes($_GET, 1, TRUE);
 $_POST = daddslashes($_POST, 1, TRUE);
 $_COOKIE = daddslashes($_COOKIE, 1, TRUE);
@@ -32,5 +42,5 @@ $_SERVER = daddslashes($_SERVER);
 $_FILES = daddslashes($_FILES);
 $_REQUEST = daddslashes($_REQUEST, 1, TRUE);
 
-require UC_DATADIR . 'config.inc.php';
+
 
