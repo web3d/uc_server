@@ -2,7 +2,7 @@
 
 namespace uc\server\app\model;
 
-use uc\server\app\base\Model;
+use uc\server\Table;
 use uc\server\HTTPClient;
 
 define('UC_NOTE_REPEAT', 2);
@@ -11,9 +11,9 @@ define('UC_NOTE_GC', 5);
 
 define('API_RETURN_FAILED', '-1');
 
-class Note extends Model
+class Note extends Table
 {
-    protected $tableName = '{{%notelist}}';
+    protected $name = 'notelist';
 
     protected $apps;
 

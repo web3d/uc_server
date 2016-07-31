@@ -6,7 +6,7 @@ use uc\server\Table;
 
 class Setting extends Table
 {
-    protected $tableName = 'settings';
+    protected $name = 'settings';
 
     public function get_settings($keys = [])
     {

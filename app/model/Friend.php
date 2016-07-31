@@ -2,11 +2,11 @@
 
 namespace uc\server\app\model;
 
-use uc\server\app\base\Model;
+use uc\server\Table;
 
-class Friend extends Model
+class Friend extends Table
 {
-    protected $tableName = '{{%friends}}';
+    protected $name = 'friends';
 
     public function add($uid, $friendid, $comment = '')
     {

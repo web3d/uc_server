@@ -2,16 +2,16 @@
 
 namespace uc\server\app\model;
 
-use uc\server\app\base\Model;
+use uc\server\Table;
 
 /**
  * 邮件队列管理模型
  */
-class Mail extends Model
+class Mail extends Table
 {
     const UC_MAIL_REPEAT = 5;
     
-    protected $tableName = '{{%mailqueue}}';
+    protected $name = '{{%mailqueue}}';
 
     public function get_total_num()
     {

@@ -2,12 +2,12 @@
 
 namespace uc\server\app\model;
 
-use uc\server\app\base\Model;
+use uc\server\Table;
 
-class Domain extends Model
+class Domain extends Table
 {
 
-    protected $tableName = '{{%domains}}';
+    protected $name = 'domains';
 
     function add_domain($domain, $ip)
     {

@@ -2,29 +2,26 @@
 
 namespace uc\server\app\model;
 
-use uc\server\app\base\Model;
+use uc\server\Table;
 
-class User extends Model
+class User extends Table
 {
 
-    protected $tableName = '{{%members}}';
+    protected $name = 'members';
 
     public function get_user_by_uid($uid)
     {
-        $arr = $this->db->fetch_first("SELECT * FROM {{%members}} WHERE uid='$uid'");
-        return $arr;
+        return $this->find(['uid' => $uid]);
     }
 
     public function get_user_by_username($username)
     {
-        $arr = $this->db->fetch_first("SELECT * FROM {{%members}} WHERE username='$username'");
-        return $arr;
+        return $this->find(['username' => $username]);
     }
 
     public function get_user_by_email($email)
     {
-        $arr = $this->db->fetch_first("SELECT * FROM {{%members}} WHERE email='$email'");
-        return $arr;
+        return $this->find(['email' => $email]);
     }
 
     public function check_username($username)
@@ -62,8 +59,9 @@ class User extends Model
 
     public function check_mergeuser($username)
     {
-        $data = $this->db->result_first("SELECT count(*) FROM {{%mergemembers}} WHERE appid='" . $this->base->app['appid'] . "' AND username='$username'");
-        return $data;
+        return $this->from('{{%mergemembers}}')
+                ->where(['appid' => $this->base->app['appid'], 'username' => $username])
+                ->count();
     }
 
     public function check_usernamecensor($username)
@@ -90,8 +88,10 @@ class User extends Model
 
     public function check_usernameexists($username)
     {
-        $data = $this->db->result_first("SELECT username FROM {{%members}} WHERE username='$username'");
-        return $data;
+        return $this->select('username')
+                ->from($this->getName())
+                ->where(['username' => $username])
+                ->scalar();
     }
 
     public function check_emailformat($email)
@@ -122,9 +122,14 @@ class User extends Model
 
     public function check_emailexists($email, $username = '')
     {
-        $sqladd = $username !== '' ? "AND username<>'$username'" : '';
-        $email = $this->db->result_first("SELECT email FROM {{%members}} WHERE email='$email' $sqladd");
-        return $email;
+        $this->select('email')
+                ->from($this->getName())
+                ->where(['email' => $email]);
+        if ($username !== '') {
+            $this->andWhere(['<>', 'username', $username]);
+        }
+        
+        return $this->scalar();
     }
 
     public function check_login($username, $password, &$user)
@@ -138,26 +143,37 @@ class User extends Model
         return $user['uid'];
     }
 
-    public function add_user($username, $password, $email, $uid = 0, $questionid = '', $answer = '', $regip = '')
+    public function add_user(string $username, string $password, string $email, int $uid = 0, int $questionid = 0, string $answer = '', string $regip = '')
     {
-        $regip = empty($regip) ? $this->base->onlineip : $regip;
         $salt = substr(uniqid(rand()), - 6);
-        $password = md5(md5($password) . $salt);
-        $sqladd = $uid ? "uid='" . intval($uid) . "'," : '';
-        $sqladd .= $questionid > 0 ? " secques='" . $this->quescrypt($questionid, $answer) . "'," : " secques='',";
-        $this->db->execute("INSERT INTO {{%members}} SET $sqladd username='$username', password='$password', email='$email', regip='$regip', regdate='" . $this->base->time . "', salt='$salt'");
-        $uid = $this->db->insert_id();
-        $this->db->execute("INSERT INTO {{%memberfields}} SET uid='$uid'");
+        
+        $user = [
+            'username' => $username,
+            'password' => md5(md5($password) . $salt),
+            'email' => $email,
+            'regip' => empty($regip) ? $this->base->onlineip : $regip,
+            'regdate' => $this->base->time,
+            'salt' => $salt,
+            'secques' => ($questionid > 0) ? $this->quescrypt($questionid, $answer) : ''
+        ];
+        
+        if ($uid > 0) {
+            $user['uid'] = $uid;
+        }
+        
+        $uid = $this->insert($user);
+        
+        $this->getCommand()->insert('{{%memberfields}}', ['uid' => $uid]);
+        
         return $uid;
     }
 
-    public function edit_user($username, $oldpw, $newpw, $email, $ignoreoldpw = 0, $questionid = '', $answer = '')
+    public function edit_user(string $username, string $oldpw, string $newpw, string $email, bool $ignoreoldpw = false, int $questionid = -1, string $answer = '')
     {
-        $data = $this->db->fetch_first("SELECT username, uid, password, salt FROM {{%members}} WHERE username='$username'");
+        $user = $this->find(['username' => $username], 'username, uid, password, salt');
         
         if ($ignoreoldpw) {
-            $isprotected = $this->db->result_first("SELECT COUNT(*) FROM {{%protectedmembers}} WHERE uid = '$data[uid]'");
-            if ($isprotected) {
+            if ($this->from('{{%protectedmembers}}')->where(['uid' => $user['uid']])->count()) {
                 return - 8;
             }
         }
@@ -166,52 +182,52 @@ class User extends Model
             return - 1;
         }
         
-        $sqladd = $newpw ? "password='" . md5(md5($newpw) . $data['salt']) . "'" : '';
-        $sqladd .= $email ? ($sqladd ? ',' : '') . " email='$email'" : '';
-        if ($questionid !== '') {
-            if ($questionid > 0) {
-                $sqladd .= ($sqladd ? ',' : '') . " secques='" . $this->quescrypt($questionid, $answer) . "'";
-            } else {
-                $sqladd .= ($sqladd ? ',' : '') . " secques=''";
-            }
+        $data = [];
+        if ($newpw) {
+            $data['password'] = md5(md5($newpw) . $user['salt']);
         }
-        if ($sqladd || $emailadd) {
-            $this->db->execute("UPDATE {{%members}} SET $sqladd WHERE username='$username'");
-            return $this->db->affected_rows();
+        if ($email) {
+            $data['email'] = $email;
+        }
+        
+        if ($questionid !== -1) {
+            $data['secques'] = ($questionid > 0) ? $this->quescrypt($questionid, $answer) : '';
+        }
+        if ($data) {
+            return $this->update($data, ['username' => $username]);
         } else {
             return - 7;
         }
     }
 
-    public function delete_user($uidsarr)
+    public function delete_user(array $uidsarr)
     {
-        $uidsarr = (array) $uidsarr;
         if (! $uidsarr) {
             return 0;
         }
-        $uids = $this->base->implode($uidsarr);
-        $arr = $this->db->fetch_all("SELECT uid FROM {{%protectedmembers}} WHERE uid IN ($uids)");
-        $puids = array();
-        foreach ((array) $arr as $member) {
-            $puids[] = $member['uid'];
-        }
-        $uids = $this->base->implode(array_diff($uidsarr, $puids));
-        if ($uids) {
-            $this->db->execute("DELETE FROM {{%members}} WHERE uid IN($uids)");
-            $this->db->execute("DELETE FROM {{%memberfields}} WHERE uid IN($uids)");
-            $this->delete_useravatar($uidsarr);
-            $this->base->load('note');
-            $_ENV['note']->add('deleteuser', "ids=$uids");
-            return $this->db->affected_rows();
-        } else {
+        
+        $puids = $this->select('uid')
+                ->from('{{%protectedmembers}}')
+                ->where(['uid' => $uidsarr])
+                ->column();
+        
+        $uids = array_diff($uidsarr, $puids);
+        if (!$uids) {
             return 0;
         }
+        
+        $result = $this->delete(['uid' => $uids]);
+        
+        $this->getCommand()->delete('{{%memberfields}}', ['uid' => $uids]);
+        $this->delete_useravatar($uidsarr);
+        $this->base->load('note')->add('deleteuser', "ids=$uids");
+        
+        return $result;
     }
 
-    public function delete_useravatar($uidsarr)
+    public function delete_useravatar(array $uidsarr)
     {
-        $uidsarr = (array) $uidsarr;
-        foreach ((array) $uidsarr as $uid) {
+        foreach ($uidsarr as $uid) {
             file_exists($avatar_file = UC_DATADIR . './avatar/' . $this->base->get_avatar($uid, 'big', 'real')) && unlink($avatar_file);
             file_exists($avatar_file = UC_DATADIR . './avatar/' . $this->base->get_avatar($uid, 'middle', 'real')) && unlink($avatar_file);
             file_exists($avatar_file = UC_DATADIR . './avatar/' . $this->base->get_avatar($uid, 'small', 'real')) && unlink($avatar_file);
@@ -223,50 +239,55 @@ class User extends Model
 
     public function get_total_num($sqladd = '')
     {
-        $data = $this->db->result_first("SELECT COUNT(*) FROM {{%members}} $sqladd");
-        return $data;
+        return $this->from($this->getName())->where($sqladd)->count();
     }
 
-    public function get_list($page, $ppp, $totalnum, $sqladd)
+    public function get_list(int $page, int $ppp, int $totalnum, $sqladd)
     {
-        $start = $this->base->page_get_start($page, $ppp, $totalnum);
-        $data = $this->db->fetch_all("SELECT * FROM {{%members}} $sqladd LIMIT $start, $ppp");
-        return $data;
+        return $this->from($this->getName())
+                ->where($sqladd)
+                ->offset($this->base->page_get_start($page, $ppp, $totalnum))
+                ->limit($ppp)
+                ->all();
     }
 
-    public function name2id($usernamesarr)
+    public function name2id(array $usernamesarr)
     {
-        $usernamesarr = daddslashes($usernamesarr, 1, TRUE);
-        $usernames = $this->base->implode($usernamesarr);
-        $query = $this->db->query("SELECT uid FROM {{%members}} WHERE username IN($usernames)");
-        $arr = array();
-        while ($user = $this->db->fetch_array($query)) {
-            $arr[] = $user['uid'];
-        }
-        return $arr;
+        return $this->select('uid')
+                ->from($this->getName())
+                ->where(['username' => $usernamesarr])
+                ->column();
     }
 
-    public function id2name($uidarr)
+    public function id2name(array $uidarr)
     {
-        $arr = array();
-        $query = $this->db->query("SELECT uid, username FROM {{%members}} WHERE uid IN (" . $this->base->implode($uidarr) . ")");
-        while ($user = $this->db->fetch_array($query)) {
+        $users = $this->select('uid, username')
+                ->from($this->getName())
+                ->where(['uid' => $uidarr])
+                ->all();
+        
+        $arr = [];
+        foreach ($users as $user) {
             $arr[$user['uid']] = $user['username'];
         }
+        
         return $arr;
     }
 
-    function quescrypt($questionid, $answer)
+    public function quescrypt(int $questionid, string $answer)
     {
         return $questionid > 0 && $answer != '' ? substr(md5($answer . md5($questionid)), 16, 8) : '';
     }
 
-    public function can_do_login($username, $ip = '')
+    /**
+     * 判断是否能继续尝试登录
+     * @param string $username
+     * @param string $ip
+     * @return int
+     */
+    public function can_do_login(string $username, string $ip = '')
     {
-        $check_times = $this->base->settings['login_failedtime'] < 1 ? 5 : $this->base->settings['login_failedtime'];
-        
         $username = substr(md5($username), 8, 15);
-        $expire = 15 * 60;
         if (! $ip) {
             $ip = $this->base->onlineip;
         }
@@ -281,32 +302,45 @@ class User extends Model
             }
         }
         
+        $expire = 15 * 60;
         if (empty($ip_check) || ($this->base->time - $ip_check['lastupdate'] > $expire)) {
             $ip_check = array();
-            $this->db->execute("REPLACE INTO {{%failedlogins}} (ip, count, lastupdate) VALUES ('{$ip}', '0', '{$this->base->time}')");
+            $this->getCommand()
+                    ->setSql("REPLACE INTO {{%failedlogins}} (ip, count, lastupdate) VALUES ('{$ip}', '0', '{$this->base->time}')")
+                    ->execute();
         }
         
         if (empty($user_check) || ($this->base->time - $user_check['lastupdate'] > $expire)) {
             $user_check = array();
-            $this->db->execute("REPLACE INTO {{%failedlogins}} (ip, count, lastupdate) VALUES ('{$username}', '0', '{$this->base->time}')");
+            $this->getCommand()
+                    ->setSql("REPLACE INTO {{%failedlogins}} (ip, count, lastupdate) VALUES ('{$username}', '0', '{$this->base->time}')")
+                    ->execute();
         }
+        
+        $check_times = $this->base->settings['login_failedtime'] < 1 
+        ? 5 
+        : $this->base->settings['login_failedtime'];
         
         if ($ip_check || $user_check) {
             $time_left = min(($check_times - $ip_check['count']), ($check_times - $user_check['count']));
             return $time_left;
         }
         
-        $this->db->execute("DELETE FROM {{%failedlogins}} WHERE lastupdate<" . ($this->base->time - ($expire + 1)), 'UNBUFFERED');
+        $this->getCommand()
+                ->delete('{{%failedlogins}}', 
+                        ['<', 'lastupdate', $this->base->time - ($expire + 1)]);
         
         return $check_times;
     }
 
-    public function loginfailed($username, $ip = '')
+    public function loginfailed(string $username, string $ip = '')
     {
-        $username = substr(md5($username), 8, 15);
-        if (! $ip) {
-            $ip = $this->base->onlineip;
-        }
-        $this->db->execute("UPDATE {{%failedlogins}} SET count=count+1, lastupdate='" . $this->base->time . "' WHERE ip='" . $ip . "' OR ip='$username'");
+        $result = $this->getCommand()
+                ->update('{{%failedlogins}}', 
+                        ['count' => 'count+1', 'lastupdate' => $this->base->time], 
+                        ['ip' => [$ip ? : $this->base->onlineip, 
+                            substr(md5($username), 8, 15)]]
+                );
+        return $result;
     }
 }

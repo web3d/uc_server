@@ -2,11 +2,11 @@
 
 namespace uc\server\app\model;
 
-use uc\server\app\base\Model;
+use uc\server\Table;
 
-class BadWord extends Model
+class BadWord extends Table
 {
-    protected $tableName = '{{%badwords}}';
+    protected $name = 'badwords';
     
     public function add_badword($find, $replacement, $admin, $type = 1)
     {

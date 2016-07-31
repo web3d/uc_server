@@ -2,7 +2,7 @@
 
 namespace uc\server\app\model;
 
-use uc\server\app\base\Model;
+use uc\server\Table;
 
 define('PMINBALCKLIST_ERROR', - 6);
 define('PMSENDSELF_ERROR', - 8);
@@ -14,10 +14,10 @@ define('PMCHATTYPE_ERROR', - 13);
 define('PMUIDTYPE_ERROR', - 14);
 define('PMDATA_ERROR', - 15);
 
-class Pm extends Model
+class Pm extends Table
 {
 
-    protected $tableName = '{{%pm_lists}}';
+    protected $name = 'pm_lists';
 
     private function pmintval($pmid)
     {
