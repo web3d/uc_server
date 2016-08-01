@@ -11,18 +11,23 @@ class Mail extends Table
 {
     const UC_MAIL_REPEAT = 5;
     
-    protected $name = '{{%mailqueue}}';
+    protected $name = 'mailqueue';
 
     public function get_total_num()
     {
-        $data = $this->db->result_first("SELECT COUNT(*) FROM {{%mailqueue}}");
-        return $data;
+        return $this->from($this->getName())->count();
     }
 
     public function get_list($page, $ppp, $totalnum)
     {
         $start = $this->base->page_get_start($page, $ppp, $totalnum);
-        $data = $this->db->fetch_all("SELECT m.*, u.username, u.email FROM {{%mailqueue}} m LEFT JOIN {{%members}} u ON m.touid=u.uid ORDER BY dateline DESC LIMIT $start, $ppp");
+        $data = $this->select('m.*, u.username, u.email')
+                ->from($this->getName() . ' m')
+                ->leftJoin('{{%members}} u', 'm.touid=u.uid')
+                ->orderBy(['dateline' => SORT_DESC])
+                ->offset($start)
+                ->limit($ppp)
+                ->all();
         foreach ((array) $data as $k => $v) {
             $data[$k]['subject'] = dhtmlspecialchars($v['subject']);
             $data[$k]['tomail'] = empty($v['tomail']) ? $v['email'] : $v['tomail'];
@@ -39,9 +44,7 @@ class Mail extends Table
      */
     public function delete_mail(array $ids)
     {
-        $ids = $this->base->implode($ids);
-        $this->db->execute("DELETE FROM {{%mailqueue}} WHERE mailid IN ($ids)");
-        return $this->db->affected_rows();
+        return $this->getCommand()->delete($this->getName(), ['mailid' => $ids]);
     }
 
     public function add(array $mail)
@@ -65,14 +68,11 @@ class Mail extends Table
             $insert_id && $this->db->execute("REPLACE INTO {{%vars}} SET name='mailexists', value='1'");
             return $insert_id;
         } else {
-            $mail['email_to'] = array();
-            $uids = 0;
-            foreach ($mail['uids'] as $uid) {
-                if (empty($uid))
-                    continue;
-                $uids .= ',' . $uid;
-            }
-            $users = $this->db->fetch_all("SELECT uid, username, email FROM {{%members}} WHERE uid IN ($uids)");
+            $mail['email_to'] = [];
+            $users = $this->select('uid, username, email')
+                    ->from('{{%members}}')
+                    ->where($mail['uids'])
+                    ->all();
             foreach ($users as $v) {
                 $mail['email_to'][] = $v['username'] . '<' . $v['email'] . '>';
             }
@@ -132,23 +132,30 @@ class Mail extends Table
 
     private function _get_mail()
     {
-        $data = $this->db->fetch_first("SELECT m.*, u.username, u.email FROM {{%mailqueue}} m LEFT JOIN {{%members}} u ON m.touid=u.uid WHERE failures<'" . self::UC_MAIL_REPEAT . "' ORDER BY level DESC, mailid ASC LIMIT 1");
-        return $data;
+        return $this->select('m.*, u.username, u.email')
+                ->from($this->getName() . ' m')
+                ->leftJoin('{{%members}} u', 'm.touid=u.uid')
+                ->where(['<', 'failures', self::UC_MAIL_REPEAT])
+                ->orderBy(['level' => SORT_DESC, 'mailid' => SORT_ASC])
+                ->one();
     }
 
     private function _get_mail_by_id(int $mailid)
     {
-        $data = $this->db->fetch_first("SELECT m.*, u.username, u.email FROM {{%mailqueue}} m LEFT JOIN {{%members}} u ON m.touid=u.uid WHERE mailid='$mailid'");
-        return $data;
+        return $this->select('m.*, u.username, u.email')
+                ->from($this->getName() . ' m')
+                ->leftJoin('{{%members}} u', 'm.touid=u.uid')
+                ->where(['mailid' => $mailid])
+                ->one();
     }
 
     private function _delete_one_mail(int $mailid)
     {
-        return $this->db->execute("DELETE FROM {{%mailqueue}} WHERE mailid='$mailid'");
+        return $this->delete(['mailid' => $mailid]);
     }
 
     private function _update_failures(int $mailid)
     {
-        return $this->db->execute("UPDATE {{%mailqueue}} SET failures=failures+1 WHERE mailid='$mailid'");
+        return $this->update(['failures' => 'failures+1'], ['mailid' => $mailid]);
     }
 }
