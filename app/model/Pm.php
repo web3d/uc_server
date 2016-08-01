@@ -4,18 +4,19 @@ namespace uc\server\app\model;
 
 use uc\server\Table;
 
-define('PMINBALCKLIST_ERROR', - 6);
-define('PMSENDSELF_ERROR', - 8);
-define('PMSENDNONE_ERROR', - 9);
-define('PMSENDCHATNUM_ERROR', - 10);
-define('PMTHREADNONE_ERROR', - 11);
-define('PMPRIVILEGENONE_ERROR', - 12);
-define('PMCHATTYPE_ERROR', - 13);
-define('PMUIDTYPE_ERROR', - 14);
-define('PMDATA_ERROR', - 15);
+
 
 class Pm extends Table
 {
+    const PMINBALCKLIST_ERROR = '-6';
+    const PMSENDSELF_ERROR = '-8';
+    const PMSENDNONE_ERROR = '-9';
+    const PMSENDCHATNUM_ERROR = '-10';
+    const PMTHREADNONE_ERROR = '-11';
+    const PMPRIVILEGENONE_ERROR = '-12';
+    const PMCHATTYPE_ERROR = '-13';
+    const PMUIDTYPE_ERROR = '-14';
+    const PMDATA_ERROR = '-15';
 
     protected $name = 'pm_lists';
 
@@ -193,7 +194,7 @@ class Pm extends Table
         
         foreach ($tmptouidarr as $key => $value) {
             if ($fromuid == $value || ! $value) {
-                return PMSENDSELF_ERROR;
+                return self::PMSENDSELF_ERROR;
             }
             
             if (in_array('{ALL}', $blackls[$value])) {
@@ -208,10 +209,10 @@ class Pm extends Table
             }
         }
         if (empty($touids)) {
-            return PMSENDNONE_ERROR;
+            return self::PMSENDNONE_ERROR;
         }
         if ($type == 1 && count($touids) < 2) {
-            return PMSENDCHATNUM_ERROR;
+            return self::PMSENDCHATNUM_ERROR;
         }
         
         $_CACHE['badwords'] = $this->base->cache('badwords');
@@ -297,7 +298,7 @@ class Pm extends Table
         
         $threadpm = $this->db->fetch_first("SELECT * FROM {{%pm_lists}} WHERE plid='$plid'");
         if (empty($threadpm)) {
-            return PMTHREADNONE_ERROR;
+            return self::PMTHREADNONE_ERROR;
         }
         
         if ($threadpm['pmtype'] == 1) {
@@ -307,17 +308,17 @@ class Pm extends Table
             } elseif ($users[1] == $fromuid) {
                 $touid = $users[0];
             } else {
-                return PMPRIVILEGENONE_ERROR;
+                return self::PMPRIVILEGENONE_ERROR;
             }
             
             $blackls = $this->get_blackls($fromuid, $touid);
             if (in_array('{ALL}', $blackls[$touid])) {
-                return PMINBALCKLIST_ERROR;
+                return self::PMINBALCKLIST_ERROR;
             }
             $this->base->load('user');
             $blackls[$touid] = $_ENV['user']->name2id($blackls[$touid]);
             if (! (isset($blackls[$touid]) && ! in_array($fromuid, $blackls[$touid]))) {
-                return PMINBALCKLIST_ERROR;
+                return self::PMINBALCKLIST_ERROR;
             }
         }
         
@@ -327,7 +328,7 @@ class Pm extends Table
             $memberuid[$member['uid']] = "('$member[uid]')";
         }
         if (! isset($memberuid[$fromuid])) {
-            return PMPRIVILEGENONE_ERROR;
+            return self::PMPRIVILEGENONE_ERROR;
         }
         
         $_CACHE['badwords'] = $this->base->cache('badwords');
@@ -379,23 +380,23 @@ class Pm extends Table
         }
         $threadpm = $this->db->fetch_first("SELECT * FROM {{%pm_lists}} WHERE plid='$plid'");
         if (empty($threadpm)) {
-            return PMTHREADNONE_ERROR;
+            return self::PMTHREADNONE_ERROR;
         }
         if ($threadpm['pmtype'] != 2) {
-            return PMCHATTYPE_ERROR;
+            return self::PMCHATTYPE_ERROR;
         }
         if ($threadpm['authorid'] != $uid) {
-            return PMPRIVILEGENONE_ERROR;
+            return self::PMPRIVILEGENONE_ERROR;
         }
         
         $blackls = $this->get_blackls($uid, $touid);
         if (in_array('{ALL}', $blackls[$touid])) {
-            return PMINBALCKLIST_ERROR;
+            return self::PMINBALCKLIST_ERROR;
         }
         $this->base->load('user');
         $blackls[$touid] = $_ENV['user']->name2id($blackls[$touid]);
         if (! (isset($blackls[$touid]) && ! in_array($uid, $blackls[$touid]))) {
-            return PMINBALCKLIST_ERROR;
+            return self::PMINBALCKLIST_ERROR;
         }
         
         $pmnum = $this->db->result_first("SELECT COUNT(*) FROM " . UC_DBTABLEPRE . $this->getposttablename($plid) . " WHERE plid='$plid'");
@@ -413,10 +414,10 @@ class Pm extends Table
         }
         $threadpm = $this->db->fetch_first("SELECT * FROM {{%pm_lists}} WHERE plid='$plid'");
         if ($threadpm['pmtype'] != 2) {
-            return PMCHATTYPE_ERROR;
+            return self::PMCHATTYPE_ERROR;
         }
         if ($threadpm['authorid'] != $uid) {
-            return PMPRIVILEGENONE_ERROR;
+            return self::PMPRIVILEGENONE_ERROR;
         }
         $this->db->execute("DELETE FROM {{%pm_members}} WHERE plid='$plid' AND uid='$touid'");
         $num = $this->db->result_first("SELECT COUNT(*) FROM {{%pm_members}} WHERE plid='$plid'");
@@ -433,10 +434,10 @@ class Pm extends Table
         $query = $this->db->query("SELECT * FROM {{%pm_members}} m LEFT JOIN {{%pm_lists}} t ON m.plid=t.plid WHERE m.plid IN (" . $this->base->implode($plids) . ") AND m.uid='$uid'");
         while ($threadpm = $this->db->fetch_array($query)) {
             if ($threadpm['pmtype'] != 2) {
-                return PMCHATTYPE_ERROR;
+                return self::PMCHATTYPE_ERROR;
             }
             if ($threadpm['authorid'] == $uid) {
-                return PMPRIVILEGENONE_ERROR;
+                return self::PMPRIVILEGENONE_ERROR;
             }
             $list[] = $threadpm['plid'];
         }
@@ -456,11 +457,11 @@ class Pm extends Table
         }
         $index = $this->db->fetch_first("SELECT * FROM {{%pm_indexes}} i LEFT JOIN {{%pm_lists}} t ON i.plid=t.plid WHERE i.pmid='$pmid'");
         if ($index['pmtype'] != 1) {
-            return PMUIDTYPE_ERROR;
+            return self::PMUIDTYPE_ERROR;
         }
         $users = explode('_', $index['min_max']);
         if (! in_array($uid, $users)) {
-            return PMPRIVILEGENONE_ERROR;
+            return self::PMPRIVILEGENONE_ERROR;
         }
         if ($index['authorid'] != $uid) {
             $this->db->execute("UPDATE " . UC_DBTABLEPRE . $this->getposttablename($index['plid']) . " SET delstatus=2 WHERE pmid='$pmid' AND delstatus=0");
@@ -512,15 +513,15 @@ class Pm extends Table
             if ($list['pmtype'] == 1) {
                 $user = explode('_', $list['min_max']);
                 if (! in_array($uid, $user)) {
-                    return PMPRIVILEGENONE_ERROR;
+                    return self::PMPRIVILEGENONE_ERROR;
                 }
             } else {
                 if ($uid != $list['authorid']) {
-                    return PMPRIVILEGENONE_ERROR;
+                    return self::PMPRIVILEGENONE_ERROR;
                 }
             }
         } else {
-            return PMTHREADNONE_ERROR;
+            return self::PMTHREADNONE_ERROR;
         }
         
         if ($list['pmtype'] == 1) {
