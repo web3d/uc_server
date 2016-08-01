@@ -36,7 +36,7 @@ class CreditControl extends Control
                 ), '');
             } else {
                 $url = $_ENV['note']->get_url_code('updatecredit', "uid=$uid&credit=$to&amount=$amount", $toappid);
-                $status = trim(HTTPClient::dfopen($url, 0, '', '', 1, $toapp['ip'], UC_NOTE_TIMEOUT));
+                $status = trim(HTTPClient::dfopen($url, 0, '', '', 1, $toapp['ip'], \uc\server\app\model\Note::UC_NOTE_TIMEOUT));
             }
         }
         echo $status ? 1 : 0;

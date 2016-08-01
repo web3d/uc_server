@@ -327,7 +327,7 @@ class UserControl extends Control
             ), '');
         } else {
             $url = $_ENV['note']->get_url_code('getcredit', "uid=$uid&credit=$credit", $appid);
-            return HTTPClient::dfopen($url, 0, '', '', 1, $app['ip'], UC_NOTE_TIMEOUT);
+            return HTTPClient::dfopen($url, 0, '', '', 1, $app['ip'], \uc\server\app\model\Note::UC_NOTE_TIMEOUT);
         }
     }
 

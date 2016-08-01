@@ -5,14 +5,13 @@ namespace uc\server\app\model;
 use uc\server\Table;
 use uc\server\HTTPClient;
 
-define('UC_NOTE_REPEAT', 2);
-define('UC_NOTE_TIMEOUT', 15);
-define('UC_NOTE_GC', 5);
-
-define('API_RETURN_FAILED', '-1');
-
 class Note extends Table
 {
+    const UC_NOTE_REPEAT = 2;
+    const UC_NOTE_TIMEOUT = 15;
+    const UC_NOTE_GC = 5;
+    const API_RETURN_FAILED = '-1';
+    
     protected $name = 'notelist';
 
     protected $apps;
@@ -163,7 +162,7 @@ class Note extends Table
         $closenote = TRUE;
         foreach ((array) $this->apps as $appid => $app) {
             $appnotes = $note['app' . $appid];
-            if ($app['recvnote'] && $appnotes != 1 && $appnotes > - UC_NOTE_REPEAT) {
+            if ($app['recvnote'] && $appnotes != 1 && $appnotes > - self::UC_NOTE_REPEAT) {
                 $this->sendone($appid, 0, $note);
                 $closenote = FALSE;
                 break;
@@ -202,7 +201,7 @@ class Note extends Table
                 "\n",
                 "\r"
             ), '', $note['postdata']);
-            $response = trim(HTTPClient::dfopen2($url, 0, $note['postdata'], '', 1, $app['ip'], UC_NOTE_TIMEOUT, TRUE));
+            $response = trim(HTTPClient::dfopen2($url, 0, $note['postdata'], '', 1, $app['ip'], self::UC_NOTE_TIMEOUT, TRUE));
         }
         
         $returnsucceed = $response != '' && ($response == 1 || is_array(xml_unserialize($response)));
@@ -232,7 +231,7 @@ class Note extends Table
 
     private function _gc()
     {
-        rand(0, UC_NOTE_GC) == 0 && $this->db->execute("DELETE FROM {{%notelist}} WHERE closed='1'");
+        rand(0, self::UC_NOTE_GC) == 0 && $this->db->execute("DELETE FROM {{%notelist}} WHERE closed='1'");
     }
 
     private function _close_note($note, $apps, $returnsucceed, $appid)
@@ -241,7 +240,7 @@ class Note extends Table
         $appcount = count($apps);
         foreach ($apps as $key => $app) {
             $appstatus = $note['app' . $app['appid']];
-            if (! $app['recvnote'] || $appstatus == 1 || $appstatus <= - UC_NOTE_REPEAT) {
+            if (! $app['recvnote'] || $appstatus == 1 || $appstatus <= - self::UC_NOTE_REPEAT) {
                 $appcount --;
             }
         }
