@@ -117,10 +117,30 @@ input.txt:hover, input.txt:focus, textarea:hover, textarea:focus {
 .logo {
 	float: left;
 	text-indent: -9999px;
-	width: 321px;
+	width: 160px;
 	height: 46px;
 	background: url(bg_repno.gif) no-repeat 29px 20px;
 }
+
+.nav{
+    position: absolute;
+    z-index: 2;
+    top: 14px;
+    left: 159px;
+    width: 500px;
+    height: 75px;
+}
+		.nav ul{ overflow:hidden; position:relative; z-index:4; font-size:14px; }
+			.nav li{ float:left; height:43px; line-height:43px; background:url(btn_block.gif) right -115px no-repeat; }
+				.nav li em{ display:block; }
+				.nav li a{ padding:5px 5px; color:#639BB0; font-weight:700; }
+				.nav li a:hover{ color:#09C; text-decoration:none; }
+				.nav li .diffcolor{ color:#F60; }
+			.nav li.navon{ line-height:33px; background:url(btn_block.gif) no-repeat; }
+				.nav li.navon em{ display:block; background:url(btn_block.gif) right -50px no-repeat; }
+				.nav li.navon em a{ display:block; background:url(btn_block.gif) center bottom no-repeat; color:#FFF; }
+					.nav li.navon em a:hover{ color:#FFF; }
+		.nav ul #header_uc { font-size:12px; }
 
 .uinfo {
 	float: right;
