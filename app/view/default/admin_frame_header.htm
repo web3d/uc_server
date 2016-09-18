@@ -9,6 +9,21 @@
 <body>
 <div class="mainhd">
 	<div class="logo">UCenter Administrator's Control Panel</div>
+        <div class="nav">
+            <ul id="topmenu">
+                <li><em><a id="header_index" hidefocus="true" href="'.UC_API.'/admin.php?m=frame" onmouseover="previewheader('uc')" onmouseout="previewheader()" onclick="uc_login=1;toggleMenu('uc', '');doane(event);">首页</a></em></li>
+                <li><em><a id="header_sys" hidefocus="true" href="'.UC_API.'/admin.php?m=frame" onmouseover="previewheader('uc')" onmouseout="previewheader()" onclick="uc_login=1;toggleMenu('uc', '');doane(event);">系统</a></em></li>
+                <li><em><a id="header_user" hidefocus="true" href="'.UC_API.'/admin.php?m=frame" onmouseover="previewheader('uc')" onmouseout="previewheader()" onclick="uc_login=1;toggleMenu('uc', '');doane(event);">用户</a></em></li>
+                <li><em><a id="header_app" hidefocus="true" href="'.UC_API.'/admin.php?m=frame" onmouseover="previewheader('uc')" onmouseout="previewheader()" onclick="uc_login=1;toggleMenu('uc', '');doane(event);">应用</a></em></li>
+                <li><em><a id="header_queue" hidefocus="true" href="'.UC_API.'/admin.php?m=frame" onmouseover="previewheader('uc')" onmouseout="previewheader()" onclick="uc_login=1;toggleMenu('uc', '');doane(event);">队列</a></em></li>
+                <li><em><a id="header_plugin" hidefocus="true" href="'.UC_API.'/admin.php?m=frame" onmouseover="previewheader('uc')" onmouseout="previewheader()" onclick="uc_login=1;toggleMenu('uc', '');doane(event);">插件</a></em></li>
+                <li><em><a id="header_tool" hidefocus="true" href="'.UC_API.'/admin.php?m=frame" onmouseover="previewheader('uc')" onmouseout="previewheader()" onclick="uc_login=1;toggleMenu('uc', '');doane(event);">工具</a></em></li>
+            </ul>
+            <div class="currentloca">
+                <p id="admincpnav"></p>
+            </div>
+            <div class="navbd"></div>
+        </div>
 	<div class="uinfo">
 		<p>{lang welcome}, <em>$username</em> [ <a href="admin.php?m=user&a=logout" target="_top">{lang menu_logout}</a> ]</p>
 		<!--{if $admincp}-->

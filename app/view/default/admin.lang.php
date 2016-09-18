@@ -12,5 +12,13 @@ $lang = array(
     'user_addsubmit' => '添 加',
     'delete' => '删除',
     'email' => 'Email',
-    'user_list' => '用户列表'
+    'user_list' => '用户列表',
+    
+    'admincp_navmenu_index' => '首页',
+    'admincp_navmenu_system' => '系统',
+    'admincp_navmenu_user' => '用户',
+    'admincp_navmenu_plugin' => '插件',
+    'admincp_navmenu_app' => '应用',
+    'admincp_navmenu_tool' => '工具',
+    'admincp_navmenu_queue' => '队列',
 );
